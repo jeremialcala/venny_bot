@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def verify():
-    event = Event(datetime.now(), "verify", "INI", datetime.now(), "New Verification")
+    event = Event(None, datetime.now(), "verify", "INI", datetime.now(), "New Verification")
     if request.args.get("hub.mode") == "subscribe" and request.args.get("hub.challenge"):
         event.update("PRO", datetime.now(), "hub.challenge")
         if not request.args.get("hub.verify_token") == os.environ["VERIFY_TOKEN"]:
@@ -26,8 +26,10 @@ def verify():
 
 @app.route("/", methods=["POST"])
 def get_message():
-    event = Event(datetime.now(), "get_message", "INI", datetime.now(), "New Message")
     data = request.get_json()
+    event = Event(data["entry"]["messaging"]["sender"]["id"], datetime.now(), "get_message", "INI", datetime.now(),
+                  "New Message from {}".format(data["entry"]["messaging"]["sender"]["id"]))
+
     event.update("OK ", datetime.now(), json.dumps(data))
     entry = Entry(**data["entry"][0])
 

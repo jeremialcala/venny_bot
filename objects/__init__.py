@@ -19,8 +19,9 @@ class Object(object):
 
 
 class Event(Object):
-    def __init__(self, start_date, event_type, status, status_date, obs=""):
+    def __init__(self, user_id, start_date, event_type, status, status_date, obs=""):
         self._id = bson.objectid.ObjectId()
+        self.user_id = user_id
         self.startDate = str(start_date)
         self.type = event_type
         self.status = status
@@ -65,18 +66,24 @@ class Database(Object):
 
 
 class ImgRequest(Object):
-    def __init__(self, imgType, imgUrl, eventId=None, _id=None, fileName=None):
+    def __init__(self, imgType, imgUrl, eventId=None, _id=None, fileName=None, saved=False):
         self._id = bson.objectid.ObjectId()
         self.eventId = eventId
         self.imgType = imgType
         self.imgUrl = imgUrl
         self.fileName = fileName
+        self.saved = saved
 
     def save_request(self, event):
         self.eventId = event.get_id()
-        self.fileName = event.type + "/" + str(event.get_id()) + self.imgType
+        self.fileName = "profile/" + str(event.user_id) + self.imgType
         db = Database(os.environ["SCHEMA"]).get_schema()
         db.images.insert(self.__dict__)
+
+    def update_image(self):
+        db = Database(os.environ["SCHEMA"]).get_schema()
+        db.images.update({"_id": self._id},
+                         {"$set": {"saved": True}})
 
     @staticmethod
     def get_image(eventId):

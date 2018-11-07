@@ -1,8 +1,9 @@
 import os
 import json
 from datetime import datetime
+from urllib.request import urlretrieve
 
-from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event
+from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest
 from tools import get_user_by_id, send_message
 
 
@@ -12,8 +13,8 @@ def process_message(msg: Messaging, event: Event):
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     message = Message(**msg.message)
     user = who_send(sender)
-    print(user)
-
+    ImgRequest(".png", user["profile_pic"]).save_request()
+    save_image(event)
     if msg.delivery is not None:
         return
     if message.is_echo is not None:
@@ -34,6 +35,7 @@ def who_send(sender: Sender):
     user = db.users.find({"id": sender.id})
     if user.count() == 0:
         user = json.loads(get_user_by_id(sender.id))
+        db.users.insert_one(user)
     return user
 
 
@@ -44,3 +46,20 @@ def get_speech(type):
     for elem in speech:
         text = elem["messages"][0]
     return text
+
+
+def save_image(event):
+    event.update("PRO", datetime.now(), "Saving Image")
+    img = ImgRequest(**ImgRequest.get_image(event.get_id()))
+    if img is None:
+        return "Image request not found!", 404
+    event.update("PRO", datetime.now(), "Downloading Image from: " + img.imgUrl)
+    from urllib.error import HTTPError
+    try:
+        rsp = urlretrieve(img.imgUrl, img.fileName)
+        img.update_image()
+        event.update("OK ", datetime.now(), rsp[0] + " Saved successfully!")
+        return True
+    except HTTPError as e:
+        event.update("ERR", datetime.now(), str(e.code) + " image " + e.msg)
+        return False
