@@ -26,7 +26,7 @@ def process_message(msg: Messaging, event: Event):
         element = {"title": "Venny", "subtitle": "Terminos y Condiciones del Servicio", "buttons": [button]}
         payload = {"template_type": "generic", "elements": [element]}
         attachment = Attachments(type="template", payload=payload)
-        send_attachment(Message(attachments=[attachment]))
+        send_attachment(Message(attachments=[attachment]), event)
 
     if message.attachments is None:
         # This is only text
