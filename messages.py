@@ -19,9 +19,9 @@ def process_message(msg: Messaging, event: Event):
 
     if message.quick_reply is not None:
         event.update("PRO", datetime.now(), json.dumps(message.quick_reply))
+        process_quick_reply(message, sender, event)
+        return
 
-    # ImgRequest(".png", user["profile_pic"]).save_request(event)
-    # save_image(event)
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
@@ -40,8 +40,8 @@ def process_message(msg: Messaging, event: Event):
         attachment = {"type": "template", "payload": payload}
         response = {"attachment": attachment}
         send_attachment(recipient_id=sender.id, message=response, event=event)
-        options = [{"content_type": "text", "title": "Acepto", "payload": "POSTBACK_PAYLOAD"},
-                   {"content_type": "text", "title": "No Acepto", "payload": "POSTBACK_PAYLOAD"}]
+        options = [{"content_type": "text", "title": "Acepto", "payload": "ACCEPT_PAYLOAD"},
+                   {"content_type": "text", "title": "No Acepto", "payload": "REJECT_PAYLOAD"}]
 
         send_options(sender.id, options, get_speech("tyc_request"), event)
         return
@@ -54,6 +54,16 @@ def process_message(msg: Messaging, event: Event):
         attachments = Attachments(**message.attachments[0])
         # payload = Payload(**attachments.payload)
         # coodinates = Coordinates(**payload.coordinates)
+
+
+def process_quick_reply(message, sender, event):
+    event.update("PRO", datetime.now(), "Processing quick_reply")
+    db = Database(os.environ["SCHEMA"]).get_schema()
+    if "ACCEPT_PAYLOAD" in message.quick_reply["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"tyc": 1, "registerStatus": 1}})
+        event.update("PRO", datetime.now(), "user {} accepted tyc successfully".format(sender.id))
+        send_message(sender.id, get_speech("intro"), event)
 
 
 def who_send(sender: Sender):
