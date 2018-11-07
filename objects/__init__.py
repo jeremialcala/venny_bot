@@ -107,11 +107,12 @@ class Attachments(Object):
 
 
 class Message(Object):
-    def __init__(self, mid, seq, attachments: list=None, text=None):
+    def __init__(self, mid, seq, attachments: list=None, text=None, is_echo=None):
         self.mid = mid
         self.seq = seq
         self.text = text
         self.attachments = attachments
+        self.is_echo = is_echo
 
 
 class Messaging(Object):
