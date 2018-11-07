@@ -27,7 +27,7 @@ def process_message(msg: Messaging, event: Event):
         msg_text = get_speech("wellcome").format(user["first_name"])
         send_message(sender.id, msg_text, event)
 
-        button = {"type": "web_url", "title": "+infp", "url": "https://novopayment.com/privacy-policy/"}
+        button = {"type": "web_url", "title": "+info", "url": "https://novopayment.com/privacy-policy/"}
         element = {"image_url": os.environ["VENNY_IMG"],
                    "title": "Venny",
                    "subtitle": "Terminos y Condiciones del Servicio",
@@ -40,8 +40,9 @@ def process_message(msg: Messaging, event: Event):
         options = [{"content_type": "text", "title": "Acepto", "payload": "POSTBACK_PAYLOAD"},
                    {"content_type": "text", "title": "No Acepto", "payload": "POSTBACK_PAYLOAD"}]
 
-        send_options(sender.id, options, "Acepta los terminos y condiciones", event)
+        send_options(sender.id, options, get_speech("tyc_request"), event)
         return
+
     if message.attachments is None:
         # This is only text
         msg_text = get_speech("wellcome").format(user["first_name"])
