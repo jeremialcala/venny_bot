@@ -28,9 +28,9 @@ def verify():
 def get_message():
     event = Event(datetime.now(), "get_message", "INI", datetime.now(), "New Message")
     data = request.get_json()
-    event.update("OK ", datetime.now(),json.dumps(data))
-    # entry = Entry(**data["entry"][0])
-    # process_message(Messaging(**entry.messaging[0]), event)
+    event.update("OK ", datetime.now(), json.dumps(data))
+    entry = Entry(**data["entry"][0])
+    process_message(Messaging(**entry.messaging[0]), event)
     event.update("OK ", datetime.now(), "Receive OK!")
     return "OK", 200
 
