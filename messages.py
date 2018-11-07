@@ -13,6 +13,12 @@ def process_message(msg: Messaging, event: Event):
     message = Message(**msg.message)
     user = who_send(sender)
     print(user)
+
+    if msg.delivery is not None:
+        return
+    if message.is_echo is "true":
+        return
+
     if message.attachments is None:
         # This is only text
         msg_text = get_speech("wellcome").format(user["first_name"])
@@ -28,8 +34,6 @@ def who_send(sender: Sender):
     user = db.users.find({"id": sender.id})
     if user.count() == 0:
         user = json.loads(get_user_by_id(sender.id))
-        if "first_name" not in user:
-            user["first_name"] = "Friend"
     return user
 
 
