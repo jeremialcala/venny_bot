@@ -19,8 +19,8 @@ def process_message(msg: Messaging, event: Event):
         send_message(sender.id, msg_text, event)
     else:
         attachments = Attachments(**message.attachments[0])
-    payload = Payload(**attachments.payload)
-    coodinates = Coordinates(**payload.coordinates)
+        # payload = Payload(**attachments.payload)
+        # coodinates = Coordinates(**payload.coordinates)
 
 
 def who_send(sender: Sender):
