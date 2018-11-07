@@ -26,26 +26,6 @@ def process_message(msg: Messaging, event: Event):
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
-    if user["tyc"] == 0:
-        msg_text = get_speech("wellcome").format(user["first_name"])
-        send_message(sender.id, msg_text, event)
-
-        button = {"type": "web_url", "title": "+info", "url": "https://novopayment.com/privacy-policy/"}
-        element = {# "image_url": os.environ["VENNY_IMG"],
-                   "title": "Venny",
-                   "subtitle": "Terminos y Condiciones del Servicio",
-                   "buttons": [button]}
-
-        payload = {"template_type": "generic", "elements": [element]}
-        attachment = {"type": "template", "payload": payload}
-        response = {"attachment": attachment}
-        send_attachment(recipient_id=sender.id, message=response, event=event)
-        options = [{"content_type": "text", "title": "Acepto", "payload": "ACCEPT_PAYLOAD"},
-                   {"content_type": "text", "title": "No Acepto", "payload": "REJECT_PAYLOAD"}]
-
-        send_options(sender.id, options, get_speech("tyc_request"), event)
-        return
-
     if message.attachments is None:
         # This is only text
         generate_response(user, message.text, event)
@@ -62,7 +42,7 @@ def process_quick_reply(message, sender, event):
     db = Database(os.environ["SCHEMA"]).get_schema()
     if "ACCEPT_PAYLOAD" in message.quick_reply["payload"]:
         db.users.update({"id": sender.id},
-                        {"$set": {"tyc": 1,
+                        {"$set": {"tyc": True,
                                   "registerStatus": 1,
                                   "dateTyC": datetime.now(),
                                   "statusDate": datetime.now()}})
@@ -75,12 +55,25 @@ def process_quick_reply(message, sender, event):
         generate_response(who_send(sender), message.quick_reply["payload"], event)
 
 
+def process_postback(msg: Messaging, event):
+    event.update("PRO", datetime.now(), "Processing postback")
+    sender = Sender(**msg.sender)
+    print(sender.to_json())
+    user = who_send(sender)
+    if "GET_STARTED_PAYLOAD" in msg.postback["payload"]:
+        if not user["tyc"]:
+            send_tyc(sender, user, event)
+        else:
+            generate_response(user, "GET_STARTED_PAYLOAD", event)
+        return
+
+
 def who_send(sender: Sender):
     db = Database(os.environ["SCHEMA"]).get_schema()
     result = db.users.find({"id": sender.id})
     if result.count() == 0:
         user = json.loads(get_user_by_id(sender.id))
-        user["tyc"] = 0
+        user["tyc"] = False
         user["registerStatus"] = 0
         db.users.insert_one(user)
     else:
@@ -149,3 +142,22 @@ def generate_response(user, text, event):
         response = {"attachment": attachment}
         send_attachment(recipient_id=user["id"], message=response, event=event)
 
+
+def send_tyc(sender, user, event):
+    msg_text = get_speech("wellcome").format(user["first_name"])
+    send_message(sender.id, msg_text, event)
+
+    button = {"type": "web_url", "title": "+info", "url": "https://novopayment.com/privacy-policy/"}
+    element = {"image_url": os.environ["VENNY_IMG"],
+               "title": "Venny",
+               "subtitle": "Terminos y Condiciones del Servicio",
+               "buttons": [button]}
+
+    payload = {"template_type": "generic", "elements": [element]}
+    attachment = {"type": "template", "payload": payload}
+    response = {"attachment": attachment}
+    send_attachment(recipient_id=sender.id, message=response, event=event)
+    options = [{"content_type": "text", "title": "Acepto", "payload": "ACCEPT_PAYLOAD"},
+               {"content_type": "text", "title": "No Acepto", "payload": "REJECT_PAYLOAD"}]
+
+    send_options(sender.id, options, get_speech("tyc_request"), event)
