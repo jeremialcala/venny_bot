@@ -58,6 +58,36 @@ def process_quick_reply(message, sender, event):
         event.update("PRO", datetime.now(), "user {} reject tyc!".format(sender.id))
         generate_response(who_send(sender), message.quick_reply["payload"], event)
 
+    if "FIND_ACCOUNT_PAYLOAD" in message.quick_reply["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"registerStatus": 1,
+                                  "statusDate": datetime.now()}})
+        send_message(sender.id, get_speech("gimme_account_number"), event)
+        return True
+
+    if "OPEN_ACCOUNT_PAYLOAD" in message.quick_reply["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"registerStatus": 3,
+                                  "statusDate": datetime.now()}})
+        options = [{"content_type": "text", "title": "Credencial de elector", "payload": "CRELEC_PAYLOAD"},
+                   {"content_type": "text", "title": "pasaporte", "payload": "PASSPORT_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("origination"), event)
+        return True
+
+    if "CRELEC_PAYLOAD" in message.quick_reply["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"registerStatus": 4,
+                                  "statusDate": datetime.now()}})
+        send_message(sender.id, get_speech("gimme_picture_creelec"), event)
+        return True
+
+    if "PASSPORT_PAYLOAD" in message.quick_reply["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"registerStatus": 5,
+                                  "statusDate": datetime.now()}})
+        send_message(sender.id, get_speech("gimme_picture_passport"), event)
+        return True
+
 
 def process_postback(msg: Messaging, event):
     event.update("PRO", datetime.now(), "Processing postback")
@@ -75,36 +105,6 @@ def process_postback(msg: Messaging, event):
         return True
 
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
-        return True
-
-    if "FIND_ACCOUNT_PAYLOAD" in msg.postback["payload"]:
-        db.users.update({"id": sender.id},
-                        {"$set": {"registerStatus": 1,
-                                  "statusDate": datetime.now()}})
-        send_message(sender.id, get_speech("gimme_account_number"), event)
-        return True
-
-    if "OPEN_ACCOUNT_PAYLOAD" in msg.postback["payload"]:
-        db.users.update({"id": sender.id},
-                        {"$set": {"registerStatus": 3,
-                                  "statusDate": datetime.now()}})
-        options = [{"content_type": "text", "title": "Credencial de elector", "payload": "CRELEC_PAYLOAD"},
-                   {"content_type": "text", "title": "pasaporte", "payload": "PASSPORT_PAYLOAD"}]
-        send_options(sender.id, options, get_speech("origination"), event)
-        return True
-
-    if "CRELEC_PAYLOAD" in msg.postback["payload"]:
-        db.users.update({"id": sender.id},
-                        {"$set": {"registerStatus": 4,
-                                  "statusDate": datetime.now()}})
-        send_message(sender.id, get_speech("gimme_picture_creelec"), event)
-        return True
-
-    if "PASSPORT_PAYLOAD" in msg.postback["payload"]:
-        db.users.update({"id": sender.id},
-                        {"$set": {"registerStatus": 5,
-                                  "statusDate": datetime.now()}})
-        send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 
 
