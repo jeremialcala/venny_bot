@@ -27,7 +27,11 @@ def verify():
 @app.route("/", methods=["POST"])
 def get_message():
     data = request.get_json()
-    print(json.dumps(data))
+    if "standby" in data["entry"][0]:
+        Event(data["entry"][0]["standby"][0]["sender"]["id"], datetime.now(), "get_message", "INI", datetime.now(),
+              "New Message from {}".format(data["entry"][0]["messaging"][0]["sender"]["id"]))
+        return "OK", 200
+
     event = Event(data["entry"][0]["messaging"][0]["sender"]["id"], datetime.now(), "get_message", "INI", datetime.now(),
                   "New Message from {}".format(data["entry"][0]["messaging"][0]["sender"]["id"]))
 
