@@ -4,7 +4,7 @@ from datetime import datetime
 from urllib.request import urlretrieve
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest
-from tools import get_user_by_id, send_message, send_attachment
+from tools import get_user_by_id, send_message, send_attachment, send_options
 
 
 def process_message(msg: Messaging, event: Event):
@@ -24,18 +24,26 @@ def process_message(msg: Messaging, event: Event):
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
     if user["tyc"] == 0:
+        msg_text = get_speech("wellcome").format(user["first_name"])
+        send_message(sender.id, msg_text, event)
+
         button = {"type": "web_url", "title": "+infp", "url": "https://novopayment.com/privacy-policy/"}
         element = {"image_url": os.environ["VENNY_IMG"],
-                   "title": "Venny", "subtitle": "Terminos y Condiciones del Servicio", "buttons": [button]}
+                   "title": "Venny",
+                   "subtitle": "Terminos y Condiciones del Servicio",
+                   "buttons": [button]}
 
         payload = {"template_type": "generic", "elements": [element]}
         attachment = {"type": "template", "payload": payload}
         response = {"attachment": attachment}
         send_attachment(recipient_id=sender.id, message=response, event=event)
+        options = [{"content_type": "text", "title": "Acepto", "payload": "POSTBACK_PAYLOAD"},
+                   {"content_type": "text", "title": "No Acepto", "payload": "POSTBACK_PAYLOAD"}]
+
+        send_options(sender.id, options, "Acepta los terminos y condiciones", event)
         return
     if message.attachments is None:
         # This is only text
-
         msg_text = get_speech("wellcome").format(user["first_name"])
         send_message(sender.id, msg_text, event)
     else:
