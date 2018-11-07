@@ -5,7 +5,8 @@ import urllib.request
 from datetime import datetime
 from flask import Flask, request
 
-from objects import Event
+from messages import process_message
+from objects import Event, Entry, Messaging, Attachments, Message, Payload, Coordinates
 
 app = Flask(__name__)
 
@@ -27,7 +28,8 @@ def verify():
 def get_message():
     event = Event(datetime.now(), "get_message", "INI", datetime.now(), "New Message")
     data = request.get_json()
-    event.update("PRO", datetime.now(), json.dumps(data))
+    entry = Entry(**data["entry"][0])
+    process_message(Messaging(**entry.messaging[0]), event)
     event.update("OK ", datetime.now(), "Receive OK!")
     return "OK", 200
 
