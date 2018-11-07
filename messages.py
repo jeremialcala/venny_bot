@@ -26,6 +26,12 @@ def process_message(msg: Messaging, event: Event):
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
+    if user["registerStatus"] != 6:
+        options = [{"content_type": "text", "title": "Ingresar nro de cuenta", "payload": "FIND_ACCOUNT_PAYLOAD"},
+                   {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("account_not_found").format(user["first_name"]), event)
+        return
+
     if message.attachments is None:
         # This is only text
         generate_response(user, message.text, event)
@@ -58,13 +64,24 @@ def process_quick_reply(message, sender, event):
 def process_postback(msg: Messaging, event):
     event.update("PRO", datetime.now(), "Processing postback")
     sender = Sender(**msg.sender)
-    print(sender.to_json())
+    event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
+    event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
+                                                                                          , tyc=str(user["tyc"])))
+    if user["registerStatus"] != 6:
+        options = [{"content_type": "text", "title": "Acepto", "payload": "ACCEPT_PAYLOAD"},
+                   {"content_type": "text", "title": "No Acepto", "payload": "REJECT_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("account_not_found").format(user["first_name"]), event)
+        return
+
     if "GET_STARTED_PAYLOAD" in msg.postback["payload"]:
         if not user["tyc"]:
             send_tyc(sender, user, event)
         else:
             generate_response(user, "GET_STARTED_PAYLOAD", event)
+        return
+
+    if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
         return
 
 
@@ -73,6 +90,7 @@ def who_send(sender: Sender):
     result = db.users.find({"id": sender.id})
     if result.count() == 0:
         user = json.loads(get_user_by_id(sender.id))
+        print(json.dumps(user))
         user["tyc"] = False
         user["registerStatus"] = 0
         db.users.insert_one(user)
