@@ -32,10 +32,13 @@ def process_message(msg: Messaging, event: Event):
 
 def who_send(sender: Sender):
     db = Database("venny").get_schema()
-    user = db.users.find({"id": sender.id})
-    if user.count() == 0:
+    result = db.users.find({"id": sender.id})
+    if result.count() == 0:
         user = json.loads(get_user_by_id(sender.id))
         db.users.insert_one(user)
+    else:
+        for doc in result:
+            return doc
     return user
 
 
