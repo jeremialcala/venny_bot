@@ -131,11 +131,11 @@ def is_registered(msg, event):
         send_options(sender.id, options, get_speech("origination"), event)
         return True
 
-    if user["registerStatus"] == 3:
+    if user["registerStatus"] == 4:
         send_message(sender.id, get_speech("gimme_picture_creelec"), event)
         return True
 
-    if user["registerStatus"] == 4:
+    if user["registerStatus"] == 5:
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 
