@@ -21,14 +21,18 @@ def process_message(msg: Messaging, event: Event):
     # save_image(event)
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
+    event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
+                                                                                          , tyc=str(user["tyc"])))
     if user["tyc"] == 0:
         button = {"type": "web_url", "title": "+infp", "url": "https://novopayment.com/privacy-policy/"}
-        element = {"title": "Venny", "subtitle": "Terminos y Condiciones del Servicio", "buttons": [button]}
+        element = {"image_url": os.environ["VENNY_IMG"],
+                   "title": "Venny", "subtitle": "Terminos y Condiciones del Servicio", "buttons": [button]}
+
         payload = {"template_type": "generic", "elements": [element]}
-
-        attachment = Attachments(type="template", payload=payload)
-        send_attachment(recipient_id=sender.id, message=Message(attachments=[attachment.to_json()]), event=event)
-
+        attachment = {"type": "template", "payload": payload}
+        response = {"attachment": attachment}
+        send_attachment(recipient_id=sender.id, message=response, event=event)
+        return
     if message.attachments is None:
         # This is only text
 
