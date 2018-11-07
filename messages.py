@@ -48,8 +48,9 @@ def process_message(msg: Messaging, event: Event):
 
     if message.attachments is None:
         # This is only text
-        msg_text = get_speech("wellcome").format(user["first_name"])
-        send_message(sender.id, msg_text, event)
+        generate_response(user, message.text, event)
+        return
+
     else:
         attachments = Attachments(**message.attachments[0])
         # payload = Payload(**attachments.payload)
@@ -111,3 +112,33 @@ def save_image(event):
     except HTTPError as e:
         event.update("ERR", datetime.now(), str(e.code) + " image " + e.msg)
         return
+
+
+def get_concept(text, event):
+    event.update("PRO", datetime.now(), "looking in our dictionary for concepts")
+    db = Database(os.environ["SCHEMA"]).get_schema()
+    concepts = []
+    for word in text.split(" "):
+        csr = db.dictionary.find_one({"words": word})
+        concepts.append(csr["concept"])
+    return concepts
+
+
+def generate_response(user, text, event):
+    concepts = get_concept(text=text, event=event)
+    if concepts.count() is 0:
+        msg_text = get_speech("wellcome").format(user["first_name"])
+        send_message(user["id"], msg_text, event)
+
+    if "my_name" in concepts:
+        elements = []
+        db = Database(os.environ["SCHEMA"]).get_schema()
+        csr = db.operations.find()
+        for elem in csr:
+            elements.append(elem)
+
+        payload = {"template_type": "generic", "elements": elements}
+        attachment = {"type": "template", "payload": payload}
+        response = {"attachment": attachment}
+        send_attachment(recipient_id=user["id"], message=response, event=event)
+
