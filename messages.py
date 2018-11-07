@@ -28,6 +28,8 @@ def who_send(sender: Sender):
     user = db.users.find({"id": sender.id})
     if user.count() == 0:
         user = json.loads(get_user_by_id(sender.id))
+        if "first_name" not in user:
+            user["first_name"] = "Friend"
     return user
 
 
