@@ -25,8 +25,9 @@ def process_message(msg: Messaging, event: Event):
         button = {"type": "web_url", "title": "+infp", "url": "https://novopayment.com/privacy-policy/"}
         element = {"title": "Venny", "subtitle": "Terminos y Condiciones del Servicio", "buttons": [button]}
         payload = {"template_type": "generic", "elements": [element]}
+
         attachment = Attachments(type="template", payload=payload)
-        send_attachment(sender.id, Message(attachments=[attachment]), event)
+        send_attachment(recipient_id=sender.id, message=Message(attachments=[attachment.to_json()]), event=event)
 
     if message.attachments is None:
         # This is only text
