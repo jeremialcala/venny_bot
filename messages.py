@@ -61,7 +61,6 @@ def process_quick_reply(message, sender, event):
     event.update("PRO", datetime.now(), "Processing quick_reply")
     db = Database(os.environ["SCHEMA"]).get_schema()
     if "ACCEPT_PAYLOAD" in message.quick_reply["payload"]:
-
         db.users.update({"id": sender.id},
                         {"$set": {"tyc": 1,
                                   "registerStatus": 1,
@@ -70,6 +69,10 @@ def process_quick_reply(message, sender, event):
 
         event.update("PRO", datetime.now(), "user {} accepted tyc successfully".format(sender.id))
         send_message(sender.id, get_speech("intro"), event)
+
+    if "REJECT_PAYLOAD" in message.quick_reply["payload"]:
+        event.update("PRO", datetime.now(), "user {} reject tyc!".format(sender.id))
+        generate_response(who_send(sender), message.quick_reply["payload"], event)
 
 
 def who_send(sender: Sender):
