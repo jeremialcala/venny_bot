@@ -17,6 +17,9 @@ def process_message(msg: Messaging, event: Event):
     if message.is_echo is not None:
         return
 
+    if message.quick_reply is not None:
+        event.update("PRO", datetime.now(), message.quick_reply)
+
     # ImgRequest(".png", user["profile_pic"]).save_request(event)
     # save_image(event)
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
