@@ -21,7 +21,7 @@ def process_message(msg: Messaging, event: Event):
     # save_image(event)
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
-    if user["t&c"] == 0:
+    if user["tyc"] == 0:
         button = {"type": "web_url", "title": "+infp", "url": "https://novopayment.com/privacy-policy/"}
         element = {"title": "Venny", "subtitle": "Terminos y Condiciones del Servicio", "buttons": [button]}
         payload = {"template_type": "generic", "elements": [element]}
