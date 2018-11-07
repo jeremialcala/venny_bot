@@ -77,12 +77,14 @@ def send_attachment(recipient_id, message, event):
     event.update("PRO", datetime.now(), "sending attachment to {recipient}".format(recipient=recipient_id))
     data = {"recipient": {"id": recipient_id}, "message": message}
     event.update("PRO", datetime.now(), "data: {}".format(json.dumps(data)))
-    print(requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=json.dumps(data)))
+    requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=json.dumps(data))
 
 
 def send_options(recipient_id, options, text, event):
-    event.update("PRO", datetime.now(), "sending attachment to {recipient}}".format(recipient=recipient_id))
+    event.update("PRO", datetime.now(), "sending attachment to {recipient}".format(recipient=recipient_id))
     data = {"recipient": {"id": recipient_id}, "message": {"text": text, "quick_replies": []}}
     for option in options:
         data["message"]["quick_replies"].append(option)
-    requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=json.dumps(data))
+    print(json.dumps(data))
+    response = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=json.dumps(data))
+    print(response.text)
