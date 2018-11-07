@@ -16,7 +16,7 @@ def process_message(msg: Messaging, event: Event):
 
     if msg.delivery is not None:
         return
-    if message.is_echo is "true":
+    if message.is_echo is not None:
         return
 
     if message.attachments is None:
