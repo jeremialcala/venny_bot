@@ -119,7 +119,8 @@ def get_concept(text, event):
     db = Database(os.environ["SCHEMA"]).get_schema()
     concepts = []
     for word in text.split(" "):
-        csr = db.dictionary.find_one({"words": word})
+        event.update("PRO", datetime.now(), "looking for word {}".format(word))
+        csr = db.dictionary.find({"words": word})
         concepts.append(csr["concept"])
     return concepts
 
