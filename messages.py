@@ -60,8 +60,13 @@ def process_quick_reply(message, sender, event):
     event.update("PRO", datetime.now(), "Processing quick_reply")
     db = Database(os.environ["SCHEMA"]).get_schema()
     if "ACCEPT_PAYLOAD" in message.quick_reply["payload"]:
+
         db.users.update({"id": sender.id},
-                        {"$set": {"tyc": 1, "registerStatus": 1}})
+                        {"$set": {"tyc": 1,
+                                  "registerStatus": 1,
+                                  "dateTyC": datetime.now(),
+                                  "statusDate": datetime.now()}})
+
         event.update("PRO", datetime.now(), "user {} accepted tyc successfully".format(sender.id))
         send_message(sender.id, get_speech("intro"), event)
 
