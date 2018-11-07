@@ -129,7 +129,7 @@ def get_concept(text, event):
 
 def generate_response(user, text, event):
     concepts = get_concept(text=text, event=event)
-    if concepts.count() is 0:
+    if len(concepts) == 0:
         msg_text = get_speech("wellcome").format(user["first_name"])
         send_message(user["id"], msg_text, event)
 
