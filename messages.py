@@ -4,7 +4,7 @@ from datetime import datetime
 from urllib.request import urlretrieve
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest
-from tools import get_user_by_id, send_message
+from tools import get_user_by_id, send_message, send_attachment
 
 
 def process_message(msg: Messaging, event: Event):
@@ -21,8 +21,16 @@ def process_message(msg: Messaging, event: Event):
     # save_image(event)
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
+    if user["t&c"] == 0:
+        button = {"type": "web_url", "title": "+infp", "url": "https://novopayment.com/privacy-policy/"}
+        element = {"title": "Venny", "subtitle": "Terminos y Condiciones del Servicio", "buttons": [button]}
+        payload = {"template_type": "generic", "elements": [element]}
+        attachment = Attachments(type="template", payload=payload)
+        send_attachment(Message(attachments=[attachment]))
+
     if message.attachments is None:
         # This is only text
+
         msg_text = get_speech("wellcome").format(user["first_name"])
         send_message(sender.id, msg_text, event)
     else:
@@ -34,9 +42,10 @@ def process_message(msg: Messaging, event: Event):
 def who_send(sender: Sender):
     db = Database(os.environ["SCHEMA"]).get_schema()
     result = db.users.find({"id": sender.id})
-    if result.count() == 0:        
+    if result.count() == 0:
         user = json.loads(get_user_by_id(sender.id))
         user["tyc"] = 0
+        user["registerStatus"] = 0
         db.users.insert_one(user)
     else:
         for doc in result:

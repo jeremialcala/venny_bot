@@ -10,6 +10,9 @@ from datetime import datetime
 from bson import ObjectId
 import objects
 
+params = {"access_token": os.environ["PAGE_ACCESS_TOKEN"]}
+headers = {"Content-Type": "application/json"}
+
 
 def new_session():
     h = hashlib.new("md5")
@@ -65,18 +68,22 @@ def get_user_by_id(user_id):
 def send_message(recipient_id, message_text, event):
     event.update("PRO", datetime.now(), "sending message to {recipient}: {text}".format(recipient=recipient_id,
                                                                                         text=message_text))
-    params = {
-        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
-    }
-    headers = {
-        "Content-Type": "application/json"
-    }
-    data = json.dumps({
-        "recipient": {
-            "id": recipient_id
-        },
-        "message": {
-            "text": message_text
-        }
-    })
+    data = json.dumps({"recipient": {"id": recipient_id}, "message": {"text": message_text}})
+
     requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
+
+
+def send_attachment(recipient_id, message, event):
+    event.update("PRO", datetime.now(), "sending attachment to {recipient}}".format(recipient=recipient_id))
+    data = {"recipient": {"id": recipient_id}, "message": message}
+    requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=json.dumps(data))
+
+
+def send_options(recipient_id, options, text):
+    params = {"access_token": os.environ["PAGE_ACCESS_TOKEN"]}
+    headers = {"Content-Type": "application/json"}
+    data = {"recipient": {"id": recipient_id}, "message": {"text": text, "quick_replies": []}}
+    for option in options:
+        data["message"]["quick_replies"].append(option)
+    log(data)
+    requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=json.dumps(data))

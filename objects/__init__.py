@@ -114,7 +114,7 @@ class Attachments(Object):
 
 
 class Message(Object):
-    def __init__(self, mid, seq, attachments: list=None, text=None, is_echo=None, app_id=None):
+    def __init__(self, mid=None, seq=None, attachments: list=None, text=None, is_echo=None, app_id=None):
         self.mid = mid
         self.seq = seq
         self.text = text
