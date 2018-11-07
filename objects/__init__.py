@@ -14,8 +14,13 @@ class Object(object):
     def to_json(self):
         for element in self.__dict__:
             if type(self.__dict__[element]) is ObjectId:
-                self[element] = str(element)
+                self.__dict__[element] = str(self.__dict__[element])
         return json.dumps(self.__dict__, sort_keys=False, indent=4, separators=(',', ': '))
+
+    def to_json_obj(self):
+        obj = json.loads(self.to_json())
+        obj.pop("_id")
+        return obj
 
 
 class Event(Object):
@@ -152,3 +157,11 @@ class Entry(Object):
 class Sender(Object):
     def __init__(self, id):
         self.id = id
+
+
+class Element(Object):
+    def __init__(self, _id=None, title=None, subtitle=None, buttons: list=None):
+        self._id = _id
+        self.title = title
+        self.subtitle = subtitle
+        self.buttons = buttons

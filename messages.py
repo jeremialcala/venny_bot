@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from urllib.request import urlretrieve
 
-from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest
+from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
 from tools import get_user_by_id, send_message, send_attachment, send_options
 
 
@@ -31,7 +31,7 @@ def process_message(msg: Messaging, event: Event):
         send_message(sender.id, msg_text, event)
 
         button = {"type": "web_url", "title": "+info", "url": "https://novopayment.com/privacy-policy/"}
-        element = {"image_url": os.environ["VENNY_IMG"],
+        element = {# "image_url": os.environ["VENNY_IMG"],
                    "title": "Venny",
                    "subtitle": "Terminos y Condiciones del Servicio",
                    "buttons": [button]}
@@ -138,7 +138,8 @@ def generate_response(user, text, event):
         db = Database(os.environ["SCHEMA"]).get_schema()
         csr = db.operations.find()
         for elem in csr:
-            elements.append(elem)
+            elem = Element(**elem)
+            elements.append(elem.to_json_obj())
 
         payload = {"template_type": "generic", "elements": elements}
         attachment = {"type": "template", "payload": payload}
