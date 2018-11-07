@@ -29,7 +29,7 @@ def process_message(msg: Messaging, event: Event):
     if user["registerStatus"] != 6:
         options = [{"content_type": "text", "title": "Ingresar nro de cuenta", "payload": "FIND_ACCOUNT_PAYLOAD"},
                    {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
-        send_options(sender.id, options, get_speech("account_not_found").format(user["first_name"]), event)
+        send_options(sender.id, options, get_speech("account_not_found").format(first_name=user["first_name"]), event)
         return
 
     if message.attachments is None:
@@ -69,9 +69,9 @@ def process_postback(msg: Messaging, event):
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
     if user["registerStatus"] != 6:
-        options = [{"content_type": "text", "title": "Acepto", "payload": "ACCEPT_PAYLOAD"},
-                   {"content_type": "text", "title": "No Acepto", "payload": "REJECT_PAYLOAD"}]
-        send_options(sender.id, options, get_speech("account_not_found").format(user["first_name"]), event)
+        options = [{"content_type": "text", "title": "Ingresar nro de cuenta", "payload": "FIND_ACCOUNT_PAYLOAD"},
+                   {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("account_not_found").format(first_name=user["first_name"]), event)
         return
 
     if "GET_STARTED_PAYLOAD" in msg.postback["payload"]:
