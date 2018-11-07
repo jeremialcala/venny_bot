@@ -122,7 +122,6 @@ class Messaging(Object):
         self.postback = postback
         self.delivery = delivery
         self.message = message
-        self.read = read
 
 
 class Postback(Object):
