@@ -8,19 +8,19 @@ from tools import get_user_by_id, send_message
 
 
 def process_message(msg: Messaging, event: Event):
-    # Find this user
-    sender = Sender(**msg.sender)
-    event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
-    message = Message(**msg.message)
-    user = who_send(sender)
     if msg.delivery is not None:
         return
+
+    # Find this user
+    sender = Sender(**msg.sender)
+    message = Message(**msg.message)
     if message.is_echo is not None:
         return
 
     # ImgRequest(".png", user["profile_pic"]).save_request(event)
     # save_image(event)
-
+    event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
+    user = who_send(sender)
     if message.attachments is None:
         # This is only text
         msg_text = get_speech("wellcome").format(user["first_name"])
@@ -34,8 +34,9 @@ def process_message(msg: Messaging, event: Event):
 def who_send(sender: Sender):
     db = Database(os.environ["SCHEMA"]).get_schema()
     result = db.users.find({"id": sender.id})
-    if result.count() == 0:
+    if result.count() == 0:        
         user = json.loads(get_user_by_id(sender.id))
+        user["tyc"] = 0
         db.users.insert_one(user)
     else:
         for doc in result:
