@@ -52,14 +52,16 @@ def save_image(event):
     event.update("PRO", datetime.now(), "Saving Image")
     img = ImgRequest(**ImgRequest.get_image(event.get_id()))
     if img is None:
-        return "Image request not found!", 404
+        return
+    if img.saved:
+        return
     event.update("PRO", datetime.now(), "Downloading Image from: " + img.imgUrl)
     from urllib.error import HTTPError
     try:
         rsp = urlretrieve(img.imgUrl, img.fileName)
         img.update_image()
         event.update("OK ", datetime.now(), rsp[0] + " Saved successfully!")
-        return True
+        return
     except HTTPError as e:
         event.update("ERR", datetime.now(), str(e.code) + " image " + e.msg)
-        return False
+        return
