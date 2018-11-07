@@ -85,6 +85,4 @@ def send_options(recipient_id, options, text, event):
     data = {"recipient": {"id": recipient_id}, "message": {"text": text, "quick_replies": []}}
     for option in options:
         data["message"]["quick_replies"].append(option)
-    print(json.dumps(data))
-    response = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=json.dumps(data))
-    print(response.text)
+    requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=json.dumps(data))
