@@ -27,6 +27,7 @@ def verify():
 @app.route("/", methods=["POST"])
 def get_message():
     data = request.get_json()
+    print(json.dumps(data))
     event = Event(data["entry"][0]["messaging"][0]["sender"]["id"], datetime.now(), "get_message", "INI", datetime.now(),
                   "New Message from {}".format(data["entry"][0]["messaging"][0]["sender"]["id"]))
 
