@@ -13,15 +13,14 @@ def process_message(msg: Messaging, event: Event):
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     message = Message(**msg.message)
     user = who_send(sender)
-    print(user)
-
     if msg.delivery is not None:
         return
     if message.is_echo is not None:
         return
 
-    ImgRequest(".png", user["profile_pic"]).save_request(event)
-    save_image(event)
+    # ImgRequest(".png", user["profile_pic"]).save_request(event)
+    # save_image(event)
+
     if message.attachments is None:
         # This is only text
         msg_text = get_speech("wellcome").format(user["first_name"])

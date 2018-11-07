@@ -141,9 +141,10 @@ class Postback(Object):
 
 
 class Entry(Object):
-    def __init__(self, id, time, messaging: list=None):
+    def __init__(self, id, time, standby: list=None, messaging: list=None):
         self.id = id
         self.time = time
+        self.standby = standby
         self.messaging = messaging
 
 
