@@ -115,11 +115,19 @@ class Message(Object):
 
 
 class Messaging(Object):
-    def __init__(self, sender, recipient, timestamp, message: Message):
+    def __init__(self, sender, recipient, timestamp, postback, message: Message, delivery=None):
         self.sender = sender
         self.recipient = recipient
         self.timestamp = timestamp
+        self.postback = postback
+        self.delivery = delivery
         self.message = message
+
+
+class Postback(Object):
+    def __init__(self, payload, title):
+        self.payload = payload
+        self.title = title
 
 
 class Entry(Object):
