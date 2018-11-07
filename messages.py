@@ -13,6 +13,7 @@ def process_message(msg: Messaging, event: Event):
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     message = Message(**msg.message)
     user = who_send(sender)
+    print(user)
     ImgRequest(".png", user["profile_pic"]).save_request(event)
     save_image(event)
     if msg.delivery is not None:
