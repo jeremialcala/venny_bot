@@ -26,10 +26,8 @@ def process_message(msg: Messaging, event: Event):
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
-    if user["registerStatus"] != 6:
-        options = [{"content_type": "text", "title": "Ingresar nro de cuenta", "payload": "FIND_ACCOUNT_PAYLOAD"},
-                   {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
-        send_options(sender.id, options, get_speech("account_not_found").format(first_name=user["first_name"]), event)
+
+    if is_registered(msg, event):
         return
 
     if message.attachments is None:
@@ -68,21 +66,78 @@ def process_postback(msg: Messaging, event):
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
-    if user["registerStatus"] != 6:
-        options = [{"content_type": "text", "title": "Ingresar nro de cuenta", "payload": "FIND_ACCOUNT_PAYLOAD"},
-                   {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
-        send_options(sender.id, options, get_speech("account_not_found").format(first_name=user["first_name"]), event)
-        return
-
+    db = Database(os.environ["SCHEMA"]).get_schema()
     if "GET_STARTED_PAYLOAD" in msg.postback["payload"]:
         if not user["tyc"]:
             send_tyc(sender, user, event)
         else:
             generate_response(user, "GET_STARTED_PAYLOAD", event)
-        return
+        return True
 
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
-        return
+        return True
+
+    if "FIND_ACCOUNT_PAYLOAD" in msg.postback["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"registerStatus": 1,
+                                  "statusDate": datetime.now()}})
+        send_message(sender.id, get_speech("gimme_account_number"), event)
+        return True
+
+    if "OPEN_ACCOUNT_PAYLOAD" in msg.postback["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"registerStatus": 3,
+                                  "statusDate": datetime.now()}})
+        options = [{"content_type": "text", "title": "Credencial de elector", "payload": "CRELEC_PAYLOAD"},
+                   {"content_type": "text", "title": "pasaporte", "payload": "PASSPORT_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("origination"), event)
+        return True
+
+    if "CRELEC_PAYLOAD" in msg.postback["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"registerStatus": 4,
+                                  "statusDate": datetime.now()}})
+        send_message(sender.id, get_speech("gimme_picture_creelec"), event)
+        return True
+
+    if "PASSPORT_PAYLOAD" in msg.postback["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"registerStatus": 5,
+                                  "statusDate": datetime.now()}})
+        send_message(sender.id, get_speech("gimme_picture_passport"), event)
+        return True
+
+
+def is_registered(msg, event):
+    event.update("PRO", datetime.now(), "Processing postback")
+    sender = Sender(**msg.sender)
+    event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
+    user = who_send(sender)
+    event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
+                                                                                          , tyc=str(user["tyc"])))
+    if user["registerStatus"] == 1:
+        options = [{"content_type": "text", "title": "Ingresar nro de cuenta", "payload": "FIND_ACCOUNT_PAYLOAD"},
+                   {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("account_not_found").format(first_name=user["first_name"]), event)
+        return True
+
+    if user["registerStatus"] == 2:
+        send_message(sender.id, get_speech("gimme_account_number"), event)
+        return True
+
+    if user["registerStatus"] == 3:
+        options = [{"content_type": "text", "title": "Credencial de elector", "payload": "CRELEC_PAYLOAD"},
+                   {"content_type": "text", "title": "pasaporte", "payload": "PASSPORT_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("origination"), event)
+        return True
+
+    if user["registerStatus"] == 3:
+        send_message(sender.id, get_speech("gimme_picture_creelec"), event)
+        return True
+
+    if user["registerStatus"] == 4:
+        send_message(sender.id, get_speech("gimme_picture_passport"), event)
+        return True
 
 
 def who_send(sender: Sender):
