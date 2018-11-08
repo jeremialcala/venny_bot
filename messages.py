@@ -102,6 +102,7 @@ def process_postback(msg: Messaging, event):
             send_tyc(sender, user, event)
         else:
             generate_response(user, "GET_STARTED_PAYLOAD", event)
+            is_registered(msg, event)
         return True
 
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
