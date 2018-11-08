@@ -8,7 +8,7 @@ from tools import log
 
 
 class Object(object):
-    def __init__(self, _id):
+    def __init__(self):
         pass
 
     def to_json(self):

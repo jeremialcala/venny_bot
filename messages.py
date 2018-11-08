@@ -37,6 +37,8 @@ def process_message(msg: Messaging, event: Event):
 
     else:
         attachments = Attachments(**message.attachments[0])
+        if user["registerStatus"] == 5:
+            send_message(sender.id, get_speech("validating"), event)
         # payload = Payload(**attachments.payload)
         # coodinates = Coordinates(**payload.coordinates)
 
