@@ -27,14 +27,10 @@ def process_message(msg: Messaging, event: Event):
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
 
-    if is_registered(msg, event):
-        return
-
     if message.attachments is None:
         # This is only text
         generate_response(user, message.text, event)
         return
-
     else:
         attachments = Attachments(**message.attachments[0])
         if user["registerStatus"] == 5:
@@ -112,7 +108,7 @@ def process_postback(msg: Messaging, event):
 
 
 def is_registered(msg, event):
-    event.update("PRO", datetime.now(), "Processing postback")
+    event.update("PRO", datetime.now(), "Processing is_registered")
     sender = Sender(**msg.sender)
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
