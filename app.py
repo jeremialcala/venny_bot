@@ -41,9 +41,13 @@ def get_message():
     message = Messaging(**entry.messaging[0])
     if "message" in entry.messaging[0]:
         process_message(message, event)
+        event.update("OK ", datetime.now(), "Receive OK!")
+        return "OK", 200
 
     if "postback" in entry.messaging[0]:
         process_postback(message, event)
+        event.update("OK ", datetime.now(), "Receive OK!")
+        return "OK", 200
 
     event.update("OK ", datetime.now(), "Receive OK!")
     return "OK", 200
