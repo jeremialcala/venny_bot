@@ -22,6 +22,9 @@ def process_message(msg: Messaging, event: Event):
         process_quick_reply(message, sender, event)
         return
 
+    if is_registered(msg, event):
+        return
+
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
