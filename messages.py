@@ -200,7 +200,8 @@ def is_registered(msg, event):
         options = [{"content_type": "location"}]
         send_options(sender.id, options, get_speech("gimme_location"), event)
         return True
-    generate_response(user, "GET_STARTED_PAYLOAD", event)
+    return False
+    # generate_response(user, "GET_STARTED_PAYLOAD", event)
 
 
 def who_send(sender: Sender):
