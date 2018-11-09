@@ -189,13 +189,13 @@ def is_registered(msg, event):
             if message.attachments[0]["type"] == "location":
                 location = {"desc":  message.attachments[0]["title"], "url":  message.attachments[0]["url"],
                             "coordinates":  message.attachments[0]["payload"]["coordinates"]}
-                send_message(sender.id, get_speech("validating"), event)
                 db.users.update({"id": sender.id},
                                 {"$set": {"registerStatus": 7,
                                           "statusDate": datetime.now(),
                                           "location": location,
                                           "locationDate": datetime.now()}})
-                send_message(sender.id, get_speech("document_response"), event)
+                options = [{"content_type": "user_phone_number"}]
+                send_options(sender.id, options, get_speech("confirm_phone_number"), event)
                 return True
         options = [{"content_type": "location"}]
         send_options(sender.id, options, get_speech("gimme_location"), event)
