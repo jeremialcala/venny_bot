@@ -122,7 +122,7 @@ def process_quick_reply(message, sender, event):
                                   "statusDate": datetime.now()}})
         options = [{"content_type": "text", "title": "SMS de elector", "payload": "SMS_CODE_PAYLOAD"},
                    {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}]
-        send_options(sender.id, options, get_speech("confimation_code_send_location"), event)
+        send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
         return True
 
     if "SMS_CODE_PAYLOAD" in message.quick_reply["payload"]:
