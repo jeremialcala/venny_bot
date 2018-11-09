@@ -247,7 +247,7 @@ def is_registered(msg, event):
         if message.text is not None:
             confirmation = only_numeric(message.text)
             if confirmation["rc"] == 0:
-                if user["confirmation"] == str(confirmation):
+                if str(user["confirmation"]) == confirmation["numbers"]:
                     confirmationTime = datetime.now() - user["date-confirmation"]
                     if confirmationTime.seconds > 180:
                         send_message(user["id"], "El código ya expiro. ")
