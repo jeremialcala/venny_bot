@@ -1,7 +1,6 @@
 # -*- coding: utf8 -*-
 import json
 import os
-import urllib.request
 from datetime import datetime
 from flask import Flask, request
 

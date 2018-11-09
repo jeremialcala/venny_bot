@@ -136,6 +136,7 @@ def process_quick_reply(message, sender, event):
         )
         db.users.update({"id": sender.id},
                         {"$set": {"confirmation": confirmation,
+                                  "confirmationDate": datetime.now(),
                                   "registerStatus": 9,
                                   "statusDate": datetime.now()}})
         send_message(sender.id, get_speech("confirmation_code_send"), event)
@@ -246,12 +247,24 @@ def is_registered(msg, event):
         if message.text is not None:
             confirmation = only_numeric(message.text)
             if confirmation["rc"] == 0:
-                if user["confirmation"] == confirmation:
+                if user["confirmation"] == str(confirmation):
+                    confirmationTime = datetime.now() - user["date-confirmation"]
+                    if confirmationTime.seconds > 180:
+                        send_message(user["id"], "El código ya expiro. ")
+                        db.users.update({"id": sender.id},
+                                        {"$set": {"email": message.quick_reply["payload"],
+                                                  "registerStatus": 8,
+                                                  "statusDate": datetime.now()}})
+                        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"},
+                                   {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}]
+                        send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
                     options = [
                         {"content_type": "text", "title": "AUTORIZADO", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
                         {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
                     send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
                                  event)
+                else:
+                    send_message(sender.id, get_speech("document_response"), event)
                 return True
         send_message(sender.id, get_speech("confirmation_code_send"), event)
         return True
