@@ -132,6 +132,7 @@ def is_registered(msg, event):
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
     message = Message(**msg.message)
+    db = Database(os.environ["SCHEMA"]).get_schema()
 
     if user["registerStatus"] == 1:
         options = [{"content_type": "text", "title": "Ingresar nro de cuenta", "payload": "FIND_ACCOUNT_PAYLOAD"},
@@ -155,15 +156,29 @@ def is_registered(msg, event):
 
     if user["registerStatus"] == 3:
         options = [{"content_type": "text", "title": "Credencial de elector", "payload": "CRELEC_PAYLOAD"},
-                   {"content_type": "text", "title": "pasaporte", "payload": "PASSPORT_PAYLOAD"}]
+                   {"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"}]
         send_options(sender.id, options, get_speech("origination"), event)
         return True
 
     if user["registerStatus"] == 4:
+        if message.attachments is not None:
+            send_message(sender.id, get_speech("validating"), event)
+            db.users.update({"id": sender.id},
+                            {"$set": {"registerStatus": 6,
+                                      "statusDate": datetime.now()}})
+            send_message(sender.id, get_speech("document_response"), event)
+            return True
         send_message(sender.id, get_speech("gimme_picture_creelec"), event)
         return True
 
     if user["registerStatus"] == 5:
+        if message.attachments is not None:
+            send_message(sender.id, get_speech("validating"), event)
+            db.users.update({"id": sender.id},
+                            {"$set": {"registerStatus": 6,
+                                      "statusDate": datetime.now()}})
+            send_message(sender.id, get_speech("document_response"), event)
+            return True
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 
