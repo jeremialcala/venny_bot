@@ -166,8 +166,9 @@ def is_registered(msg, event):
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
-                                                                                          , tyc=str(user["tyc"])))
-    message = Message(**msg.message)
+                                                                                      , tyc=str(user["tyc"])))
+    if msg.message is not None:
+        message = Message(**msg.message)
     db = Database(os.environ["SCHEMA"]).get_schema()
 
     if user["registerStatus"] == 1:
