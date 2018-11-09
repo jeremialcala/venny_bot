@@ -69,7 +69,6 @@ def send_message(recipient_id, message_text, event):
     event.update("PRO", datetime.now(), "sending message to {recipient}: {text}".format(recipient=recipient_id,
                                                                                         text=message_text))
     data = json.dumps({"recipient": {"id": recipient_id}, "message": {"text": message_text}})
-
     requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
 
 
@@ -86,3 +85,18 @@ def send_options(recipient_id, options, text, event):
     for option in options:
         data["message"]["quick_replies"].append(option)
     requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=json.dumps(data))
+
+
+def only_numeric(text, amount=False):
+    numbs = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    if amount:
+        numbs.append('.')
+    resp = ""
+    for char in text:
+        if char in numbs:
+            resp += char
+    if len(text) != len(resp) and len(resp) != 0:
+        return {"rc": -123, "msg": "no todos los caracteres no son numeros", "numbers": resp}
+    elif len(resp) == 0:
+        return {"rc": -500, "msg": "no hay numeros en este texto", "numbers": resp}
+    return {"rc": 0, "msg": "Process OK", "numbers": resp}
