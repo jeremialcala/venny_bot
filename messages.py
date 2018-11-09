@@ -162,22 +162,24 @@ def is_registered(msg, event):
 
     if user["registerStatus"] == 4:
         if message.attachments is not None:
-            send_message(sender.id, get_speech("validating"), event)
-            db.users.update({"id": sender.id},
-                            {"$set": {"registerStatus": 6,
-                                      "statusDate": datetime.now()}})
-            send_message(sender.id, get_speech("document_response"), event)
+            if message.attachments["type"] is "image":
+                send_message(sender.id, get_speech("validating"), event)
+                db.users.update({"id": sender.id},
+                                {"$set": {"registerStatus": 6,
+                                          "statusDate": datetime.now()}})
+                send_message(sender.id, get_speech("document_response"), event)
             return True
         send_message(sender.id, get_speech("gimme_picture_creelec"), event)
         return True
 
     if user["registerStatus"] == 5:
         if message.attachments is not None:
-            send_message(sender.id, get_speech("validating"), event)
-            db.users.update({"id": sender.id},
-                            {"$set": {"registerStatus": 6,
-                                      "statusDate": datetime.now()}})
-            send_message(sender.id, get_speech("document_response"), event)
+            if message.attachments["type"] is "image":
+                send_message(sender.id, get_speech("validating"), event)
+                db.users.update({"id": sender.id},
+                                {"$set": {"registerStatus": 6,
+                                          "statusDate": datetime.now()}})
+                send_message(sender.id, get_speech("document_response"), event)
             return True
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
