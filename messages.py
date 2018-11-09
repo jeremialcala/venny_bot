@@ -3,8 +3,10 @@ import json
 from datetime import datetime
 from urllib.request import urlretrieve
 
+from twilio.rest import Client
+
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
-from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric
+from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
 def process_message(msg: Messaging, event: Event):
@@ -100,6 +102,40 @@ def process_quick_reply(message, sender, event):
     if "PASSPORT_PAYLOAD" in message.quick_reply["payload"]:
         db.users.update({"id": sender.id},
                         {"$set": {"registerStatus": 5,
+                                  "statusDate": datetime.now()}})
+        send_message(sender.id, get_speech("gimme_picture_passport"), event)
+        return True
+
+    if "+" in message.quick_reply["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"phoneNumber": message.quick_reply["payload"],
+                                  "registerStatus": 8,
+                                  "statusDate": datetime.now()}})
+        options = [{"content_type": "user_email"}]
+        send_options(sender.id, options, get_speech("confirm_email"), event)
+        return True
+
+    if "@" in message.quick_reply["payload"]:
+        db.users.update({"id": sender.id},
+                        {"$set": {"email": message.quick_reply["payload"],
+                                  "registerStatus": 8,
+                                  "statusDate": datetime.now()}})
+        options = [{"content_type": "text", "title": "SMS de elector", "payload": "SMS_CODE_PAYLOAD"},
+                   {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("confimation_code_send_location"), event)
+        return True
+
+    if "SMS_CODE_PAYLOAD" in message.quick_reply["payload"]:
+        confirmation = random_with_n_digits(5)
+        user = who_send(sender)
+        client = Client(os.environ["ACCOUNT_ID"], os.environ["AUTH_TOKEN"])
+        client.messages.create(
+            from_=os.environ["SMS_ORI"],
+            to=user["phoneNumber"],
+            body="Tu clave de temporal es: " + str(confirmation)
+        )
+        db.users.update({"id": sender.id},
+                        {"$set": {"registerStatus": 9,
                                   "statusDate": datetime.now()}})
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True

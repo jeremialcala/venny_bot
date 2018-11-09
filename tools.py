@@ -3,6 +3,8 @@ import hashlib
 import sys
 import time
 import os
+from random import randint
+
 import requests
 import json
 from urllib.request import urlretrieve
@@ -100,3 +102,9 @@ def only_numeric(text, amount=False):
     elif len(resp) == 0:
         return {"rc": -500, "msg": "no hay numeros en este texto", "numbers": resp}
     return {"rc": 0, "msg": "Process OK", "numbers": resp}
+
+
+def random_with_n_digits(n):
+    range_start = 10 ** (n - 1)
+    range_end = (10 ** n) - 1
+    return randint(range_start, range_end)
