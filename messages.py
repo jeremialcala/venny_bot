@@ -143,7 +143,6 @@ def is_registered(msg, event):
         if message.text is not None:
             acc_num = only_numeric(message.text)
             if acc_num["rc"] == 0:
-                send_message(sender.id, get_speech("account_not_found_msg"), event)
                 options = [
                     {"content_type": "text", "title": "Escribir un email", "payload": "SEND_MAIL_PAYLOAD"},
                     {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
