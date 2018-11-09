@@ -135,9 +135,10 @@ def process_quick_reply(message, sender, event):
             body="Tu clave de temporal es: " + str(confirmation)
         )
         db.users.update({"id": sender.id},
-                        {"$set": {"registerStatus": 9,
+                        {"$set": {"confirmation": confirmation,
+                                  "registerStatus": 9,
                                   "statusDate": datetime.now()}})
-        send_message(sender.id, get_speech("gimme_picture_passport"), event)
+        send_message(sender.id, get_speech("confirmation_code_send"), event)
         return True
 
 
@@ -239,6 +240,19 @@ def is_registered(msg, event):
                 return True
         options = [{"content_type": "location"}]
         send_options(sender.id, options, get_speech("gimme_location"), event)
+        return True
+
+    if user["registerStatus"] == 9:
+        if message.text is not None:
+            confirmation = only_numeric(message.text)
+            if confirmation["rc"] == 0 and user["confirmation"] == confirmation:
+                options = [
+                    {"content_type": "text", "title": "AUTORIZADO", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
+                    {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
+                send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
+                             event)
+                return True
+        send_message(sender.id, get_speech("gimme_account_number"), event)
         return True
     return False
     # generate_response(user, "GET_STARTED_PAYLOAD", event)
