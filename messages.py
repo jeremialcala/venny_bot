@@ -174,8 +174,8 @@ def is_registered(msg, event):
     db = Database(os.environ["SCHEMA"]).get_schema()
 
     if user["registerStatus"] == 1:
-        options = [{"content_type": "text", "title": "Ingresar nro de cuenta", "payload": "FIND_ACCOUNT_PAYLOAD"},
-                   {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
+        options = [{"content_type": "text", "title": "Abrir cuenta", "payload": "OPEN_ACCOUNT_PAYLOAD"},
+                    {"content_type": "text", "title": "Num. Cta.", "payload": "FIND_ACCOUNT_PAYLOAD"}]
         send_options(sender.id, options, get_speech("account_not_found").format(first_name=user["first_name"]), event)
         return True
 
@@ -184,8 +184,8 @@ def is_registered(msg, event):
             acc_num = only_numeric(message.text)
             if acc_num["rc"] == 0:
                 options = [
-                    {"content_type": "text", "title": "Escribir un email", "payload": "SEND_MAIL_PAYLOAD"},
-                    {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
+                    {"content_type": "text", "title": "Abrir cuenta", "payload": "OPEN_ACCOUNT_PAYLOAD"},
+                    {"content_type": "text", "title": "Escribir un email", "payload": "SEND_MAIL_PAYLOAD"}]
                 send_options(sender.id, options, get_speech("account_not_found_msg").format(first_name=user["first_name"]),
                              event)
                 return True
@@ -193,7 +193,7 @@ def is_registered(msg, event):
         return True
 
     if user["registerStatus"] == 3:
-        options = [{"content_type": "text", "title": "Credencial de elector", "payload": "CRELEC_PAYLOAD"},
+        options = [{"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"},
                    {"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"}]
         send_options(sender.id, options, get_speech("origination"), event)
         return True
