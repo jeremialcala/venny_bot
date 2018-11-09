@@ -162,7 +162,7 @@ def is_registered(msg, event):
 
     if user["registerStatus"] == 4:
         if message.attachments is not None:
-            if message.attachments["type"] is "image":
+            if message.attachments[0]["type"] is "image":
                 send_message(sender.id, get_speech("validating"), event)
                 db.users.update({"id": sender.id},
                                 {"$set": {"registerStatus": 6,
@@ -174,7 +174,7 @@ def is_registered(msg, event):
 
     if user["registerStatus"] == 5:
         if message.attachments is not None:
-            if message.attachments["type"] is "image":
+            if message.attachments[0]["type"] is "image":
                 send_message(sender.id, get_speech("validating"), event)
                 db.users.update({"id": sender.id},
                                 {"$set": {"registerStatus": 6,
