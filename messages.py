@@ -250,7 +250,7 @@ def is_registered(msg, event):
                 if str(user["confirmation"]) == confirmation["numbers"]:
                     confirmationTime = datetime.now() - user["confirmationDate"]
                     if confirmationTime.seconds > 180:
-                        send_message(user["id"], "El código ya expiro. ")
+                        send_message(user["id"], "El código ya expiro. ",event)
                         db.users.update({"id": sender.id},
                                         {"$set": {"email": message.quick_reply["payload"],
                                                   "registerStatus": 8,
