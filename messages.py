@@ -187,7 +187,6 @@ def is_registered(msg, event):
                 send_options(sender.id, options, get_speech("account_not_found_msg").format(first_name=user["first_name"]),
                              event)
                 return True
-
         send_message(sender.id, get_speech("gimme_account_number"), event)
         return True
 
@@ -307,7 +306,7 @@ def generate_response(user, text, event):
         msg_text = get_speech("wellcome").format(user["first_name"])
         send_message(user["id"], msg_text, event)
 
-    if "my_name" in concepts:
+    if "my_name" in concepts and user["registerStatus"] == 19:
         elements = []
         db = Database(os.environ["SCHEMA"]).get_schema()
         csr = db.operations.find()
