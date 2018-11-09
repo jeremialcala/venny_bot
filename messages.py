@@ -88,7 +88,7 @@ def process_quick_reply(message, sender, event):
                         {"$set": {"registerStatus": 3,
                                   "statusDate": datetime.now()}})
         options = [{"content_type": "text", "title": "Credencial de elector", "payload": "CRELEC_PAYLOAD"},
-                   {"content_type": "text", "title": "pasaporte", "payload": "PASSPORT_PAYLOAD"}]
+                   {"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"}]
         send_options(sender.id, options, get_speech("origination"), event)
         return True
 
@@ -120,7 +120,7 @@ def process_quick_reply(message, sender, event):
                         {"$set": {"email": message.quick_reply["payload"],
                                   "registerStatus": 8,
                                   "statusDate": datetime.now()}})
-        options = [{"content_type": "text", "title": "SMS de elector", "payload": "SMS_CODE_PAYLOAD"},
+        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"},
                    {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}]
         send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
         return True
