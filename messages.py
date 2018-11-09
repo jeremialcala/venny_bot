@@ -4,7 +4,7 @@ from datetime import datetime
 from urllib.request import urlretrieve
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
-from tools import get_user_by_id, send_message, send_attachment, send_options
+from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric
 
 
 def process_message(msg: Messaging, event: Event):
@@ -29,6 +29,7 @@ def process_message(msg: Messaging, event: Event):
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
+    db = Database(os.environ["SCHEMA"]).get_schema()
 
     if message.attachments is None:
         # This is only text
@@ -36,8 +37,22 @@ def process_message(msg: Messaging, event: Event):
         return
     else:
         attachments = Attachments(**message.attachments[0])
+        # TODO: Validate attachment using faces!
+
+        if user["registerStatus"] == 4:
+            send_message(sender.id, get_speech("validating"), event)
+            db.users.update({"id": sender.id},
+                            {"$set": {"registerStatus": 6,
+                                      "statusDate": datetime.now()}})
+            send_message(sender.id, get_speech("document_response"), event)
+
         if user["registerStatus"] == 5:
             send_message(sender.id, get_speech("validating"), event)
+            db.users.update({"id": sender.id},
+                            {"$set": {"registerStatus": 6,
+                                      "statusDate": datetime.now()}})
+            send_message(sender.id, get_speech("document_response"), event)
+
         # payload = Payload(**attachments.payload)
         # coodinates = Coordinates(**payload.coordinates)
 
@@ -61,7 +76,7 @@ def process_quick_reply(message, sender, event):
 
     if "FIND_ACCOUNT_PAYLOAD" in message.quick_reply["payload"]:
         db.users.update({"id": sender.id},
-                        {"$set": {"registerStatus": 1,
+                        {"$set": {"registerStatus": 2,
                                   "statusDate": datetime.now()}})
         send_message(sender.id, get_speech("gimme_account_number"), event)
         return True
@@ -102,7 +117,6 @@ def process_postback(msg: Messaging, event):
         if not user["tyc"]:
             send_tyc(sender, user, event)
         else:
-            generate_response(user, "GET_STARTED_PAYLOAD", event)
             is_registered(msg, event)
         return True
 
@@ -117,6 +131,8 @@ def is_registered(msg, event):
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
+    message = Message(**msg.message)
+
     if user["registerStatus"] == 1:
         options = [{"content_type": "text", "title": "Ingresar nro de cuenta", "payload": "FIND_ACCOUNT_PAYLOAD"},
                    {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
@@ -124,6 +140,17 @@ def is_registered(msg, event):
         return True
 
     if user["registerStatus"] == 2:
+        if message.text is not None:
+            acc_num = only_numeric(message.text)
+            if acc_num["rc"] == 0:
+                send_message(sender.id, get_speech("account_not_found_msg"), event)
+                options = [
+                    {"content_type": "text", "title": "Escribir un email", "payload": "SEND_MAIL_PAYLOAD"},
+                    {"content_type": "text", "title": "Abrir una cuenta Venn", "payload": "OPEN_ACCOUNT_PAYLOAD"}]
+                send_options(sender.id, options, get_speech("account_not_found_msg").format(first_name=user["first_name"]),
+                             event)
+                return True
+
         send_message(sender.id, get_speech("gimme_account_number"), event)
         return True
 
@@ -140,6 +167,12 @@ def is_registered(msg, event):
     if user["registerStatus"] == 5:
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
+
+    if user["registerStatus"] == 6:
+        options = [{"content_type": "location"}]
+        send_options(sender.id, options, get_speech("gimme_location"), event)
+        return True
+    generate_response(user, "GET_STARTED_PAYLOAD", event)
 
 
 def who_send(sender: Sender):
