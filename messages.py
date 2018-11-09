@@ -252,8 +252,7 @@ def is_registered(msg, event):
                     if confirmationTime.seconds > 180:
                         send_message(user["id"], "El código ya expiro. ",event)
                         db.users.update({"id": sender.id},
-                                        {"$set": {"email": message.quick_reply["payload"],
-                                                  "registerStatus": 8,
+                                        {"$set": {"registerStatus": 8,
                                                   "statusDate": datetime.now()}})
                         options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"},
                                    {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}]
