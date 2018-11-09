@@ -258,13 +258,15 @@ def is_registered(msg, event):
                         options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"},
                                    {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}]
                         send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
+                        return True
                     options = [
                         {"content_type": "text", "title": "AUTORIZADO", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
                         {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
                     send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
                                  event)
+                    return True
                 else:
-                    send_message(sender.id, get_speech("document_response"), event)
+                    send_message(sender.id, get_speech("confirmation_code_wrong"), event)
                 return True
         send_message(sender.id, get_speech("confirmation_code_send"), event)
         return True
