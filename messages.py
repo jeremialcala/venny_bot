@@ -248,7 +248,7 @@ def is_registered(msg, event):
             confirmation = only_numeric(message.text)
             if confirmation["rc"] == 0:
                 if str(user["confirmation"]) == confirmation["numbers"]:
-                    confirmationTime = datetime.now() - user["date-confirmation"]
+                    confirmationTime = datetime.now() - user["confirmationDate"]
                     if confirmationTime.seconds > 180:
                         send_message(user["id"], "El código ya expiro. ")
                         db.users.update({"id": sender.id},
