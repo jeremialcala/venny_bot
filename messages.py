@@ -168,6 +168,8 @@ def is_registered(msg, event):
                                 {"$set": {"registerStatus": 6,
                                           "statusDate": datetime.now()}})
                 send_message(sender.id, get_speech("document_response"), event)
+                options = [{"content_type": "location"}]
+                send_options(sender.id, options, get_speech("gimme_location"), event)
             return True
         send_message(sender.id, get_speech("gimme_picture_creelec"), event)
         return True
@@ -180,6 +182,8 @@ def is_registered(msg, event):
                                 {"$set": {"registerStatus": 6,
                                           "statusDate": datetime.now()}})
                 send_message(sender.id, get_speech("document_response"), event)
+                options = [{"content_type": "location"}]
+                send_options(sender.id, options, get_speech("gimme_location"), event)
                 return True
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
