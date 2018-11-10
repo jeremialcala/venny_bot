@@ -108,3 +108,50 @@ def random_with_n_digits(n):
     range_start = 10 ** (n - 1)
     range_end = (10 ** n) - 1
     return randint(range_start, range_end)
+
+
+def get_user_document_type(user):
+    if user["document"]["documentType"] == "cedula":
+        return "CC"
+    else:
+        return "PA"
+
+
+def get_account_from_pool(db):
+    criteria = {"codMisc": "SA"}
+    return db.accountPool.find_one(criteria)
+
+
+def np_api_request(url, data, api_headers, event, api_params=None, http_method=None):
+    event.update("PRO", datetime.now(), "Conectando a: " + url)
+    if http_method is "GET":
+        api_response = requests.get(url, headers=api_headers)
+    else:
+        log("Data:" + json.dumps(data))
+        api_response = requests.post(url, params=api_params, headers=api_headers, data=json.dumps(data))
+
+    event.update("PRO", datetime.now(), "response: " + api_response.text)
+    event.update("PRO", datetime.now(), "status_code: " + str(api_response.status_code))
+    if api_response.status_code == 401:
+        os.environ["NP_OAUTH2_TOKEN"] = get_oauth_token()
+        api_headers["Authorization"] = "Bearer " + os.environ["NP_OAUTH2_TOKEN"]
+        return np_api_request(url, data, api_headers, api_params, http_method)
+    else:
+        return api_response
+
+
+def get_oauth_token():
+    api_headers = {"x-channel": "web",
+                   "x-language": "es",
+                   "accept": "application/json",
+                   "Content-Type": "application/json"}
+
+    data = {"grant_type": os.environ["NP_GTYPE"],
+            "client_id": os.environ["NP_CID"],
+            "client_secret": os.environ["NP_SRT"]}
+
+    url = os.environ["NP_URL"] + os.environ["NP_OAUTH2"] + "token"
+    api_response = requests.post(url, headers=api_headers, data=json.dumps(data))
+    if api_response.status_code == 200:
+        credentials = json.loads(api_response.text)
+        return credentials["accessToken"]

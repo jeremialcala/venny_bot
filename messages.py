@@ -6,6 +6,7 @@ from urllib.request import urlretrieve
 from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
+from services import user_origination
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
@@ -24,7 +25,7 @@ def process_message(msg: Messaging, event: Event):
         process_quick_reply(message, sender, event)
         return
 
-    if is_registered(msg, event):
+    if is_registering(msg, event):
         return
 
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
@@ -87,7 +88,7 @@ def process_quick_reply(message, sender, event):
         db.users.update({"id": sender.id},
                         {"$set": {"registerStatus": 3,
                                   "statusDate": datetime.now()}})
-        options = [{"content_type": "text", "title": "Credencial de elector", "payload": "CRELEC_PAYLOAD"},
+        options = [{"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"},
                    {"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"}]
         send_options(sender.id, options, get_speech("origination"), event)
         return True
@@ -109,7 +110,7 @@ def process_quick_reply(message, sender, event):
     if "+" in message.quick_reply["payload"]:
         db.users.update({"id": sender.id},
                         {"$set": {"phoneNumber": message.quick_reply["payload"],
-                                  "registerStatus": 8,
+                                  "registerStatus": 7,
                                   "statusDate": datetime.now()}})
         options = [{"content_type": "user_email"}]
         send_options(sender.id, options, get_speech("confirm_email"), event)
@@ -142,6 +143,19 @@ def process_quick_reply(message, sender, event):
         send_message(sender.id, get_speech("confirmation_code_send"), event)
         return True
 
+    if "ACCOUNT_CONFIRM_PAYLOAD" in message.quick_reply["payload"]:
+        send_message(sender.id, get_speech("account_creation_start"), event)
+        user = who_send(sender)
+        origination = user_origination(user, db)
+        if origination[1] == 200:
+            send_message(sender.id, get_speech("account_creation_success"), event)
+            db.users.update({"id": sender.id},
+                            {'$set': {"registerStatus": 11,
+                                      "statusDate": datetime.now()}})
+            send_operation(user, db)
+        else:
+            send_message(sender.id, get_speech("account_creation_fail"), event)
+
 
 def process_postback(msg: Messaging, event):
     event.update("PRO", datetime.now(), "Processing postback")
@@ -154,15 +168,17 @@ def process_postback(msg: Messaging, event):
     if "GET_STARTED_PAYLOAD" in msg.postback["payload"]:
         if not user["tyc"]:
             send_tyc(sender, user, event)
+        elif is_registering(msg, event):
+            return True
         else:
-            is_registered(msg, event)
+            send_operation(user, db)
         return True
 
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
         return True
 
 
-def is_registered(msg, event):
+def is_registering(msg, event):
     event.update("PRO", datetime.now(), "Processing is_registered")
     sender = Sender(**msg.sender)
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
@@ -263,12 +279,23 @@ def is_registered(msg, event):
                         {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
                     send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
                                  event)
+                    db.users.update({"id": sender.id},
+                                    {"$set": {"registerStatus": 10,
+                                              "statusDate": datetime.now()}})
                     return True
                 else:
                     send_message(sender.id, get_speech("confirmation_code_wrong"), event)
                 return True
         send_message(sender.id, get_speech("confirmation_code_send"), event)
         return True
+
+    if user["registerStatus"] == 10:
+        options = [
+            {"content_type": "text", "title": "AUTORIZADO", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
+            {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
+                     event)
+
     return False
     # generate_response(user, "GET_STARTED_PAYLOAD", event)
 
@@ -335,7 +362,7 @@ def generate_response(user, text, event):
         msg_text = get_speech("wellcome").format(user["first_name"])
         send_message(user["id"], msg_text, event)
 
-    if "my_name" in concepts and user["registerStatus"] == 19:
+    if "my_name" in concepts and user["registerStatus"] == 11:
         elements = []
         db = Database(os.environ["SCHEMA"]).get_schema()
         csr = db.operations.find()
@@ -367,3 +394,16 @@ def send_tyc(sender, user, event):
                {"content_type": "text", "title": "No Acepto", "payload": "REJECT_PAYLOAD"}]
 
     send_options(sender.id, options, get_speech("tyc_request"), event)
+
+
+def send_operation(user, db):
+    elements = []
+    csr = db.operations.find()
+    for elem in csr:
+        elem = Element(**elem)
+        elements.append(elem.to_json_obj())
+
+    payload = {"template_type": "generic", "elements": elements}
+    attachment = {"type": "template", "payload": payload}
+    response = {"attachment": attachment}
+    send_attachment(recipient_id=user["id"], message=response, event=event)
