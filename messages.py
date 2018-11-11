@@ -6,7 +6,7 @@ from urllib.request import urlretrieve
 from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
-from services import user_origination
+from services import user_origination, get_user_face
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
@@ -69,9 +69,31 @@ def process_quick_reply(message, sender, event):
                                   "registerStatus": 1,
                                   "dateTyC": datetime.now(),
                                   "statusDate": datetime.now()}})
-
         event.update("PRO", datetime.now(), "user {} accepted tyc successfully".format(sender.id))
-        send_message(sender.id, get_speech("intro"), event)
+        user = who_send(sender)
+        face = get_user_face(user, event)
+        if face.status_code == 200:
+            face_data = json.loads(face.text)
+            img_url = os.environ["IMG_PROC"] + os.environ["FACE_API"] + "image?file="
+            attachment = {"type": "template"}
+            payload = {"template_type": "generic", "elements": []}
+            if len(face_data["faces"]) > 1:
+                send_message(sender.id, get_speech("faces_multiple_found").format(str(len(face_data["faces"]))), event)
+                for image in face_data["faces"]:
+                    buttons = {}
+                    elements = {"buttons": [], "title": "Este es tu rostro?",
+                                "image_url": img_url + image["fileName"]}
+                    buttons["title"] = "Si! lo es..."
+                    buttons["type"] = "postback"
+                    buttons["payload"] = "MY_FACE_IS_" + image["_id"]
+                    elements["buttons"].append(buttons)
+                    payload["elements"].append(elements)
+            else:
+                payload["template_type"] = "list"
+                payload["top_element_style"] = "compact"
+            attachment["payload"] = payload
+
+        # send_message(sender.id, get_speech("intro"), event)
 
     if "REJECT_PAYLOAD" in message.quick_reply["payload"]:
         event.update("PRO", datetime.now(), "user {} reject tyc!".format(sender.id))
@@ -305,7 +327,6 @@ def who_send(sender: Sender):
     result = db.users.find({"id": sender.id})
     if result.count() == 0:
         user = json.loads(get_user_by_id(sender.id))
-        print(json.dumps(user))
         user["tyc"] = False
         user["registerStatus"] = 0
         db.users.insert_one(user)

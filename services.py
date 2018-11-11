@@ -1,7 +1,10 @@
 import os
+from datetime import datetime
 
+import requests
 from bson import ObjectId
 
+from objects import Database
 from tools import get_user_document_type, random_with_n_digits, get_account_from_pool, np_api_request
 
 
@@ -51,3 +54,13 @@ def user_origination(user, db):
         return "OK", 200, account
     else:
         return api_response.text, api_response.status_code
+
+
+def get_user_face(user, event):
+    event.update("PRO", datetime.now(), "Processing quick_reply")
+    db = Database(os.environ["SCHEMA"]).get_schema()
+    img_proc_url = os.environ["IMG_PROC"] + os.environ["FACE_API"] + "detect"
+    data = {"imgUrl": user["profile_pic"], "imgType": ".jpg"}
+    return requests.post(url=img_proc_url, data=data)
+
+
