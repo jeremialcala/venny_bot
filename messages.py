@@ -74,7 +74,7 @@ def process_quick_reply(message, sender, event):
         face = get_user_face(user, event)
         if face.status_code == 200:
             face_data = json.loads(face.text)
-            img_url = os.environ["IMG_PROC"] + os.environ["FACE_API"] + "image?file="
+            img_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "image?file="
             attachment = {"type": "template"}
             payload = {"template_type": "generic", "elements": []}
             if len(face_data["faces"]) > 1:

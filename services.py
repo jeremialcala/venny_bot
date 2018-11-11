@@ -59,7 +59,7 @@ def user_origination(user, db):
 def get_user_face(user, event):
     event.update("PRO", datetime.now(), "Processing quick_reply")
     db = Database(os.environ["SCHEMA"]).get_schema()
-    img_proc_url = os.environ["IMG_PROC"] + os.environ["FACE_API"] + "detect"
+    img_proc_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "detect"
     data = {"imgUrl": user["profile_pic"], "imgType": ".jpg"}
     return requests.post(url=img_proc_url, data=data)
 
