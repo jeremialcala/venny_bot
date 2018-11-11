@@ -58,9 +58,10 @@ def user_origination(user, db):
 
 
 def get_user_face(user, event):
-    event.update("PRO", datetime.now(), "Processing quick_reply")
+    event.update("PRO", datetime.now(), "Processing get_user_face")
+    headers = {"Content-Type": "application/json"}
     img_proc_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "detect"
     data = {"imgUrl": user["profile_pic"], "imgType": ".jpg"}
-    return requests.post(url=img_proc_url, data=json.dumps(data))
+    return requests.post(url=img_proc_url, headers=headers, data=json.dumps(data))
 
 
