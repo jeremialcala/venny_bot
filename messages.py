@@ -77,7 +77,7 @@ def process_quick_reply(message, sender, event):
             face_data = json.loads(face.text)
             img_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "image?file="
             attachment = {"type": "template"}
-            payload = {"template_type": "list", "elements": []}
+            payload = {"template_type": "list", "top_element_style": "compact", "elements": []}
             if len(face_data["faces"]) > 1:
                 send_message(sender.id, get_speech("faces_multiple_found").format(str(len(face_data["faces"]))), event)
                 for image in face_data["faces"]:
@@ -89,18 +89,10 @@ def process_quick_reply(message, sender, event):
                     buttons["payload"] = "MY_FACE_IS_" + image["_id"]
                     elements["buttons"].append(buttons)
                     payload["elements"].append(elements)
-            else:
-                payload["template_type"] = "generic"
 
-            params = {"access_token": os.environ["PAGE_ACCESS_TOKEN"]}
-            headers = {"Content-Type": "application/json"}
             attachment["payload"] = payload
-            recipient = {"id": user["id"]}
-            rsp_message = {"attachment": attachment}
-            data = {"recipient": recipient, "message": rsp_message}
-            requests.post("https://graph.facebook.com/v2.6/me/messages", params=params,
-                          headers=headers, data=json.dumps(data))
-            send_attachment(sender.id, attachment, event)
+            response = {"attachment": attachment}
+            send_attachment(recipient_id=sender.id, message=response, event=event)
         # send_message(sender.id, get_speech("intro"), event)
 
     if "REJECT_PAYLOAD" in message.quick_reply["payload"]:
