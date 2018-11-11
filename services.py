@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime
 
@@ -60,7 +61,6 @@ def get_user_face(user, event):
     event.update("PRO", datetime.now(), "Processing quick_reply")
     img_proc_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "detect"
     data = {"imgUrl": user["profile_pic"], "imgType": ".jpg"}
-    print(data)
-    return requests.post(url=img_proc_url, data=data)
+    return requests.post(url=img_proc_url, data=json.dumps(data))
 
 
