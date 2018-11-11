@@ -92,7 +92,7 @@ def process_quick_reply(message, sender, event):
                 payload["template_type"] = "list"
                 payload["top_element_style"] = "compact"
             attachment["payload"] = payload
-
+            send_attachment(sender.id, attachment, event)
         # send_message(sender.id, get_speech("intro"), event)
 
     if "REJECT_PAYLOAD" in message.quick_reply["payload"]:
