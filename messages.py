@@ -42,6 +42,22 @@ def process_message(msg: Messaging, event: Event):
     else:
         attachments = Attachments(**message.attachments[0])
         # TODO: Validate attachment using faces!
+        if user["registerStatus"] == 0:
+            user["profile_pic"] = attachments.payload["url"]
+            face = get_user_face(user, event)
+            if face.status_code == 200:
+                face_data = json.loads(face.text)
+                prep_face_attachment(sender, face_data, event)
+                if len(face_data["faces"]) == 0:
+                    send_message(sender.id, get_speech("faces_not_found"), event)
+                    return True
+
+                db.users.update({"id": sender.id},
+                                {"$set": {"tyc": True,
+                                          "registerStatus": 1,
+                                          "dateTyC": datetime.now(),
+                                          "statusDate": datetime.now()}})
+                event.update("PRO", datetime.now(), "user {} accepted tyc successfully".format(sender.id))
 
         if user["registerStatus"] == 4:
             send_message(sender.id, get_speech("validating"), event)
@@ -65,39 +81,27 @@ def process_quick_reply(message, sender, event):
     event.update("PRO", datetime.now(), "Processing quick_reply")
     db = Database(os.environ["SCHEMA"]).get_schema()
     if "ACCEPT_PAYLOAD" in message.quick_reply["payload"]:
-        db.users.update({"id": sender.id},
-                        {"$set": {"tyc": True,
-                                  "registerStatus": 1,
-                                  "dateTyC": datetime.now(),
-                                  "statusDate": datetime.now()}})
-        event.update("PRO", datetime.now(), "user {} accepted tyc successfully".format(sender.id))
         user = who_send(sender)
         face = get_user_face(user, event)
         if face.status_code == 200:
             face_data = json.loads(face.text)
-            img_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "image?file="
-            attachment = {"type": "template"}
-            payload = {"template_type": "list", "top_element_style": "compact", "elements": []}
-            if len(face_data["faces"]) > 1:
-                send_message(sender.id, get_speech("faces_multiple_found").format(str(len(face_data["faces"]))), event)
-                for image in face_data["faces"]:
-                    buttons = {}
-                    elements = {"buttons": [], "title": "Este es tu rostro?",
-                                "image_url": img_url + image["fileName"]}
-                    buttons["title"] = "Si! lo es..."
-                    buttons["type"] = "postback"
-                    buttons["payload"] = "MY_FACE_IS_" + image["_id"]
-                    elements["buttons"].append(buttons)
-                    payload["elements"].append(elements)
+            prep_face_attachment(sender, face_data, event)
+            if len(face_data["faces"]) == 0:
+                send_message(sender.id, get_speech("faces_not_found"), event)
+                return True
 
-            attachment["payload"] = payload
-            response = {"attachment": attachment}
-            send_attachment(recipient_id=sender.id, message=response, event=event)
-        # send_message(sender.id, get_speech("intro"), event)
+            db.users.update({"id": sender.id},
+                            {"$set": {"tyc": True,
+                                      "registerStatus": 1,
+                                      "dateTyC": datetime.now(),
+                                      "statusDate": datetime.now()}})
+            event.update("PRO", datetime.now(), "user {} accepted tyc successfully".format(sender.id))
 
+        return True
     if "REJECT_PAYLOAD" in message.quick_reply["payload"]:
         event.update("PRO", datetime.now(), "user {} reject tyc!".format(sender.id))
         generate_response(who_send(sender), message.quick_reply["payload"], event)
+        return True
 
     if "FIND_ACCOUNT_PAYLOAD" in message.quick_reply["payload"]:
         db.users.update({"id": sender.id},
@@ -195,7 +199,15 @@ def process_postback(msg: Messaging, event):
         else:
             send_operation(user, db)
         return True
+    if "MY_FACE_IS_" in msg.postback["payload"]:
+        faceId = msg.postback["payload"].split("_")[3]
+        db.users.update({"id": sender.id},
+                        {"$set": {"faceId": faceId,
+                                  "faceDate": datetime.now()}})
+        event.update("PRO", datetime.now(), "face information of {} save successfully".format(sender.id))
 
+        send_message(sender.id, get_speech("intro"), event)
+        return True
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
         return True
 
@@ -417,7 +429,7 @@ def send_tyc(sender, user, event):
     send_options(sender.id, options, get_speech("tyc_request"), event)
 
 
-def send_operation(user, db):
+def send_operation(user, db, event):
     elements = []
     csr = db.operations.find()
     for elem in csr:
@@ -428,3 +440,26 @@ def send_operation(user, db):
     attachment = {"type": "template", "payload": payload}
     response = {"attachment": attachment}
     send_attachment(recipient_id=user["id"], message=response, event=event)
+
+
+def prep_face_attachment(sender, face_data, event):
+    img_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "image?file="
+    attachment = {"type": "template"}
+    payload = {"template_type": "generic", "elements": []}
+
+    send_message(sender.id, get_speech("faces_multiple_found").format(str(len(face_data["faces"]))), event)
+    for image in face_data["faces"]:
+        buttons = {}
+        elements = {"buttons": [], "title": "Este es tu rostro?",
+                    "image_url": img_url + image["fileName"]}
+        buttons["title"] = "Si! lo es..."
+        buttons["type"] = "postback"
+        buttons["payload"] = "MY_FACE_IS_" + image["_id"]
+        elements["buttons"].append(buttons)
+        payload["elements"].append(elements)
+    if len(face_data["faces"]) > 1:
+        payload["template_type"] = "list"
+        payload["top_element_style"] = "compact"
+    attachment["payload"] = payload
+    response = {"attachment": attachment}
+    send_attachment(recipient_id=sender.id, message=response, event=event)
