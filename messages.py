@@ -487,14 +487,13 @@ def generate_response(user, text, event):
         rsp = get_user_by_name(name=text.split(" "), operation="SEND_MONEY", db=db)
         print(rsp)
         if rsp[1] == 200:
-            send_message(user["id"], "")
+            send_message(user["id"], get_speech("money_send_select"), event)
             attachment = rsp[2]
             rsp_message = {"attachment": attachment}
             send_attachment(user["id"], rsp_message, event)
             db.users.update({"id": user['id']},
                             {'$set': {"operationStatus": 0}})
             return True
-
 
 
 def send_tyc(sender, user, event):
