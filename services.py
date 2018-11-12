@@ -152,9 +152,9 @@ def get_user_movements(user, db, event, mov_id=None):
             create_mov_attachment(user, movements, db)
             return "OK", 200
         elif api_response.status_code == 404:
-            send_message(user["id"], "No tienes movimientos registrados.")
+            send_message(user["id"], "No tienes movimientos registrados.", event)
         else:
-            send_message(user["id"], "En estos momentos no pudimos procesar tu operación.")
+            send_message(user["id"], "En estos momentos no pudimos procesar tu operación.", event)
             return "OK", 200
 
     else:
@@ -168,7 +168,7 @@ def get_user_movements(user, db, event, mov_id=None):
         if movements["status"] == 0 or movements["page"] >= movements["count"]:
             db.movements.update({"_id": ObjectId(mov_id)},
                                 {'$set': {"status": 0}})
-            send_message(user["id"], "No hay mas movimientos...")
+            send_message(user["id"], "No hay mas movimientos...", event)
             return "OK", 200
 
         create_mov_attachment(user, movements, event)
