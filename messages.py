@@ -460,6 +460,10 @@ def generate_response(user, text, event):
         response = {"attachment": attachment}
         send_attachment(recipient_id=user["id"], message=response, event=event)
 
+    if "balance" in concepts and user["registerStatus"] == 11:
+        get_user_balance(user, db, event)
+        return True
+
 
 def send_tyc(sender, user, event):
     msg_text = get_speech("wellcome").format(user["first_name"])
