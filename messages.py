@@ -9,7 +9,7 @@ from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
 from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance, \
-    get_user_movements, get_current_transaction, get_user_by_name
+    get_user_movements, get_current_transaction, get_user_by_name, execute_send_money, send_payment_receipt
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
@@ -238,6 +238,33 @@ def process_quick_reply(message, sender, event):
         options = [{"content_type": "text", "title": "Si", "payload": "TRX_Y_MSG_" + str(transaction["_id"])},
                    {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
         send_options(user["id"], options, get_speech("money_send_description"), event)
+
+    if "SEND_" in message.quick_reply["payload"]:
+        action = message.quick_reply["payload"].split("_")
+        transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
+
+        for item in action:
+            print(type(item))
+
+        if action[1] is "N":
+            send_payment_receipt(transaction)
+            return "OK", 200
+
+        if action[1] is "Y":
+            send_message(user["id"], "indicame la descripcion del envio?", event)
+            send_message(user["id"], "colocala asi: \"pago por\" + \"motivo del pago\" ", event)
+            return "OK", 200
+
+        if "CONFIRM" in message.quick_reply["payload"]:
+            send_message(user["id"], "Ejecutando")
+            execute_send_money(transaction, db)
+            return "OK", 200
+
+        if "CANCEL" in message.quick_reply["payload"]:
+            send_message(user["id"], "Vale! cancelamos tu transaccion")
+            db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                                   {"$set": {"status": 6}})
+            return "OK", 200
 
 
 def process_postback(msg: Messaging, event):
