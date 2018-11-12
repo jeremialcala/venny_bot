@@ -12,7 +12,7 @@ from tools import get_user_document_type, random_with_n_digits, get_account_from
 def user_origination(user, db):
     data = {"card-number": "000712", "exp-date": "0320", "document-type": "CC", "document-number": "16084701",
             "name-1": " ", "name-2": " ", "last-name-1": "", "last-name-2": " ",
-            "birth-date": "01/06/1982", "birth-place": " ", "nationality": "THEWORLD", "sex": "M",
+            "birth-date": "01/06/1982", "birth-place": "MEXICO", "nationality": "THEWORLD", "sex": "M",
             "marital-status": "S", "phone-1": " ", "phone-2": "00000000000", "phone-3": "00000000000",
             "email": "yecidaltahona1990@hotmail.com", "address-1": "Carrera 11 # 10 - 12",
             "code-address-1": "11001",
@@ -30,9 +30,9 @@ def user_origination(user, db):
     data["name-1"] = user["first_name"]
     data["last-name-1"] = user["last_name"]
     data["last-name-2"] = user["last_name"]
-    data["birth-place"] = user["location"]["Address"]["Country"]
+    # data["birth-place"] = user["location"]["Address"]["Country"]
     data["phone-1"] = user["cellphone"]
-    data["address-2"] = user["location"]["Address"]["Label"]
+    # data["address-2"] = user["location"]["Address"]["Label"]
 
     api_headers = {"x-country": "Usd",
                    "language": "es",
