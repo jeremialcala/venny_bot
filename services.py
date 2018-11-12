@@ -63,7 +63,7 @@ def user_origination(user, db, event):
         return api_response.text, api_response.status_code
 
 
-def get_user_balance(user, db):
+def get_user_balance(user, db, event):
     account = db.accountPool.find_one({"_id": user["accountId"]})
 
     url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] \
@@ -78,7 +78,7 @@ def get_user_balance(user, db):
                    "Authorization": "Bearer $OAUTH2TOKEN$"}
 
     api_headers["Authorization"] = api_headers["Authorization"].replace("$OAUTH2TOKEN$", os.environ["NP_OAUTH2_TOKEN"])
-    api_response = np_api_request(url=url, data=None, api_headers=api_headers, http_method="GET")
+    api_response = np_api_request(url=url, data=None, api_headers=api_headers, http_method="GET", event=event)
 
     if api_response.status_code == 200:
         attachment = {"type": "template"}

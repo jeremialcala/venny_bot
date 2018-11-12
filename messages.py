@@ -243,7 +243,7 @@ def process_postback(msg: Messaging, event):
         return True
 
     if "BALANCE_PAYLOAD" in msg.postback["payload"]:
-        get_user_balance(user, db)
+        get_user_balance(user, db, event)
         return True
 
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
