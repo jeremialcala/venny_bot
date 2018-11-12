@@ -567,7 +567,7 @@ def generate_response(user, text, event):
 
     if "payment" in concepts and transaction["status"] == 3:
         transaction["description"] = text
-        send_payment_receipt(transaction)
+        send_payment_receipt(transaction, db, event)
         return True
 
     if len(concepts) == 0:
