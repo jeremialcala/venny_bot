@@ -65,6 +65,7 @@ def process_message(msg: Messaging, event: Event):
                             {"$set": {"registerStatus": 6,
                                       "statusDate": datetime.now()}})
             send_message(sender.id, get_speech("document_response"), event)
+            return True
 
         if user["registerStatus"] == 5:
             send_message(sender.id, get_speech("validating"), event)
