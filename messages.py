@@ -301,6 +301,7 @@ def is_registering(msg, event):
                                {"content_type": "text", "title": "Esta mal!", "payload": "WRONG_DATA_PAYLOAD"}]
                     send_options(sender.id, options, get_speech("document_information")
                                  .format(firstName=user["first_name"],
+                                         documentType=user["document"]["documentType"],
                                          number=verify["mrz"]["number"],
                                          firstPName=verify["mrz"]["firstName"],
                                          middleName=verify["mrz"]["middleName"],
