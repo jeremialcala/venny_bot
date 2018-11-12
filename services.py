@@ -31,7 +31,7 @@ def user_origination(user, db):
     data["last-name-1"] = user["last_name"]
     data["last-name-2"] = user["last_name"]
     # data["birth-place"] = user["location"]["Address"]["Country"]
-    data["phone-1"] = user["cellphone"]
+    data["phone-1"] = user["phoneNumber"]
     # data["address-2"] = user["location"]["Address"]["Label"]
 
     api_headers = {"x-country": "Usd",
