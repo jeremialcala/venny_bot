@@ -301,13 +301,13 @@ def is_registering(msg, event):
                                {"content_type": "text", "title": "Esta mal!", "payload": "WRONG_DATA_PAYLOAD"}]
                     send_options(sender.id, options, get_speech("document_information")
                                  .format(firstName=user["first_name"],
-                                         number=verify["number"],
-                                         firstPName=verify["firstName"],
-                                         middleName=verify["middleName"],
-                                         lastName=verify["lastName"],
-                                         secondSurname=verify["secondSurname"],
-                                         birthDate=verify["birthDate"],
-                                         expDate=verify["expDate"]), event)
+                                         number=verify["mrz"]["number"],
+                                         firstPName=verify["mrz"]["firstName"],
+                                         middleName=verify["mrz"]["middleName"],
+                                         lastName=verify["mrz"]["lastName"],
+                                         secondSurname=verify["mrz"]["secondSurname"],
+                                         birthDate=verify["mrz"]["birthDate"],
+                                         expDate=verify["mrz"]["expDate"]), event)
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 
