@@ -614,3 +614,41 @@ def prep_face_attachment(sender, face_data, event):
     attachment["payload"] = payload
     response = {"attachment": attachment}
     send_attachment(recipient_id=sender.id, message=response, event=event)
+
+
+def send_payment_receipt(transaction, db, event):
+    user = db.users.find_one({"id": transaction["sender"]})
+    friend = db.users.find_one({"id": transaction["recipient"]})
+
+    account = db.accountPool.find_one({"_id": ObjectId(user["accountId"])})
+
+    payload = {"template_type": "receipt", "recipient_name": friend["first_name"],
+               "order_number": str(transaction["_id"]), "currency": "USD",
+               "payment_method": "VISA " + account["cardNumber"][2:], "order_url": "",
+               "timestamp": str(datetime.timestamp(datetime.now())).split(".")[0],
+               "summary": {"total_cost": transaction["amount"]}, "elements": []}
+
+    element = {"title": "Envio de Dinero a " + friend["first_name"],
+               "subtitle": "Envio de Dinero", "price": transaction["amount"], "currency": "USD",
+               "image_url": friend["profile_pic"]}
+
+    if "description" in transaction:
+        element["subtitle"] = transaction["description"]
+        db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                               {"$set": {"description": transaction["description"]}})
+
+    payload["elements"].append(element)
+    message = {"attachment": {"type": "template", "payload": payload}}
+    data = {"recipient": {"id": user["id"]}, "message": message}
+    db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                           {"$set": {"status": 4}})
+    print(data)
+    rsp = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params,
+                        headers=headers,
+                        data=json.dumps(data))
+    print(rsp.text)
+    options = [
+        {"content_type": "text", "title": "Confirmado", "payload": "TRX_DO_CONFIRM_" + str(transaction["_id"])},
+        {"content_type": "text", "title": "Cancelar", "payload": "TRX_DO_CANCEL_" + str(transaction["_id"])}]
+
+    send_options(user["id"], options, get_speech("money_send_confirm"), event)
