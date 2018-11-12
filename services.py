@@ -47,7 +47,7 @@ def user_origination(user, db, event):
           account["indx"] + "/employee?trxid=" + str(random_with_n_digits(10))
     print(url)
 
-    api_response = np_api_request(url=url, data=json.dumps(data), api_headers=api_headers, event=event)
+    api_response = np_api_request(url=url, data=data, api_headers=api_headers, event=event)
     print(api_response.text)
     if api_response.status_code == 200:
         db.accountPool.update({"_id": ObjectId(account["_id"])},
