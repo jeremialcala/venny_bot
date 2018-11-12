@@ -9,7 +9,7 @@ from objects import Database
 from tools import get_user_document_type, random_with_n_digits, get_account_from_pool, np_api_request
 
 
-def user_origination(user, db):
+def user_origination(user, db, event):
     data = {"card-number": "000712", "exp-date": "0320", "document-type": "CC", "document-number": "16084701",
             "name-1": " ", "name-2": " ", "last-name-1": "", "last-name-2": " ",
             "birth-date": "01/06/1982", "birth-place": "MEXICO", "nationality": "THEWORLD", "sex": "M",
@@ -47,7 +47,7 @@ def user_origination(user, db):
           account["indx"] + "/employee?trxid=" + str(random_with_n_digits(10))
     print(url)
 
-    api_response = np_api_request(url=url, data=json.dumps(data), api_headers=api_headers)
+    api_response = np_api_request(url=url, data=json.dumps(data), api_headers=api_headers, event=event)
     print(api_response.text)
     if api_response.status_code == 200:
         db.accountPool.update({"_id": ObjectId(account["_id"])},
