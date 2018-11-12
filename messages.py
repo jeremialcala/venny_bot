@@ -297,16 +297,17 @@ def is_registering(msg, event):
                     if not verify["match"]:
                         send_message(sender.id, get_speech("document_face_not_match"), event)
                         return True
-                    options = [{"content_type": "text", "title": "Correcto!", "payload": "RIGHT_DATA_PAYLOAD"},
-                               {"content_type": "text", "title": "Esta mal!", "payload": "WRONG_DATA_PAYLOAD"}]
-                    send_options(sender.id, options, get_speech("document_information")
-                                 .format(firstName=user["first_name"],
-                                         documentType=user["document"]["documentType"],
-                                         number=verify["mrz"]["number"],
-                                         firstPName=verify["mrz"]["firstName"],
-                                         middleName=verify["mrz"]["middleName"],
-                                         lastName=verify["mrz"]["lastName"],
-                                         secondSurname=verify["mrz"]["secondSurname"]), event)
+                    send_message(sender.id, get_speech("document_information").format(firstName=user["first_name"],
+                                                                                      documentType=user["document"]
+                                                                                      ["documentType"],
+                                                                                      number=verify["mrz"]
+                                                                                      ["number"]), event)
+                    db.users.update({"id": sender.id},
+                                    {"$set": {"document": {"documentNumber": verify["mrz"]["number"]},
+                                              "registerStatus": 6,
+                                              "statusDate": datetime.now()}})
+                    options = [{"content_type": "location"}]
+                    send_options(sender.id, options, get_speech("gimme_location"), event)
                     return True
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
