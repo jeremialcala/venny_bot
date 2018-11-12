@@ -257,7 +257,7 @@ def process_postback(msg: Messaging, event):
         return True
 
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
-        send_message(sender.id, get_speech("money_send_start"), event)
+        send_message(sender.id, get_speech("money_send_start").format(user["first_name"]), event)
         db.users.update({"id": user['id']},
                         {'$set': {"operationStatus": 1}})
 
