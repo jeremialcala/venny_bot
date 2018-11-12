@@ -7,9 +7,9 @@ import requests
 from bson import ObjectId
 from twilio.rest import Client
 
-from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
+from objects import Messaging, Message, Attachments, Sender, Database, Event, ImgRequest, Element
 from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance, \
-    get_user_movements, get_current_transaction, get_user_by_name, execute_send_money
+    get_user_movements, get_user_by_name, execute_send_money
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
