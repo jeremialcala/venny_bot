@@ -7,7 +7,7 @@ import requests
 from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
-from services import user_origination, get_user_face, validate_user_document, create_user_card
+from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
@@ -241,6 +241,11 @@ def process_postback(msg: Messaging, event):
 
         send_message(sender.id, get_speech("intro"), event)
         return True
+
+    if "BALANCE_PAYLOAD" in msg.postback["payload"]:
+        get_user_balance(user, db)
+        return True
+
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
         return True
 

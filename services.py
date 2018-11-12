@@ -9,6 +9,10 @@ from objects import Database
 from tools import get_user_document_type, random_with_n_digits, get_account_from_pool, np_api_request
 
 
+params = {"access_token": os.environ["PAGE_ACCESS_TOKEN"]}
+headers = {"Content-Type": "application/json"}
+
+
 def user_origination(user, db, event):
     data = {"card-number": "000712", "exp-date": "0320", "document-type": "CC", "document-number": "16084701",
             "name-1": " ", "name-2": " ", "last-name-1": "", "last-name-2": " ",
@@ -57,6 +61,55 @@ def user_origination(user, db, event):
         return "OK", 200, account
     else:
         return api_response.text, api_response.status_code
+
+
+def get_user_balance(user, db):
+    account = db.accountPool.find_one({"_id": user["accountId"]})
+
+    url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] \
+          + account["indx"] + "/employee/" + user["document"]["documentNumber"] \
+          + "/balance-inq?trxid=" + str(random_with_n_digits(10))
+
+    api_headers = {"x-country": "Usd",
+                   "language": "es",
+                   "channel": "API",
+                   "accept": "application/json",
+                   "Content-Type": "application/json",
+                   "Authorization": "Bearer $OAUTH2TOKEN$"}
+
+    api_headers["Authorization"] = api_headers["Authorization"].replace("$OAUTH2TOKEN$", os.environ["NP_OAUTH2_TOKEN"])
+    api_response = np_api_request(url=url, data=None, api_headers=api_headers, http_method="GET")
+
+    if api_response.status_code == 200:
+        attachment = {"type": "template"}
+        payload = {"template_type": "generic", "elements": []}
+        balance = json.loads(api_response.text)
+        elements = {"title": "Tarjeta: " + balance["card-number"],
+                    "subtitle": "Saldo Disponible: " + balance["available-balance"],
+                    "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]}
+        payload["elements"].append(elements)
+        attachment["payload"] = payload
+        recipient = {"id": user["id"]}
+        rsp_message = {"attachment": attachment}
+        data = {"recipient": recipient, "message": rsp_message}
+        requests.post("https://graph.facebook.com/v2.6/me/messages", params=params,
+                      headers=headers, data=json.dumps(data))
+        return "OK", 200
+    else:
+        attachment = {"type": "template"}
+        payload = {"template_type": "generic", "elements": []}
+        elements = {"title": "En estos momentos no pude procesar tu operación.",
+                    "subtitle": "available-balance: 0.00",
+                    "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]}
+        payload["elements"].append(elements)
+        attachment["payload"] = payload
+        recipient = {"id": user["id"]}
+        rsp_message = {"attachment": attachment}
+        data = {"recipient": recipient, "message": rsp_message}
+        requests.post("https://graph.facebook.com/v2.6/me/messages", params=params,
+                      headers=headers, data=json.dumps(data))
+        # send_message(user["id"], "En estos momentos no pude procesar tu operación.")
+        return "OK", 200
 
 
 def get_user_face(user, event):
