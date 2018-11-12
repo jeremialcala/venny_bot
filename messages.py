@@ -518,7 +518,7 @@ def get_concept(text, event):
 def generate_response(user, text, event):
     concepts = get_concept(text=text, event=event)
     db = Database(os.environ["SCHEMA"]).get_schema()
-
+    print("CONCEPTS: " + str(concepts))
     if "my_name" in concepts and user["registerStatus"] == 11:
         elements = []
         csr = db.operations.find()
@@ -552,6 +552,7 @@ def generate_response(user, text, event):
             return True
 
     transaction = get_current_transaction(user)
+
     if transaction["status"] == 2:
         amount = only_numeric(text, amount=True)
         if amount["rc"] is 0:
@@ -564,7 +565,7 @@ def generate_response(user, text, event):
             send_options(user["id"], options, "te gustaria enviar una descripción de tu pago?")
             return True
 
-    if transaction["status"] == 3 and "payment" in concepts:
+    if "payment" in concepts and transaction["status"] == 3:
         transaction["description"] = text
         send_payment_receipt(transaction)
         return True
