@@ -9,8 +9,11 @@ from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Sender, Database, Event, ImgRequest, Element
 from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance, \
-    get_user_movements, get_user_by_name, execute_send_money
+    get_user_movements, get_user_by_name, execute_send_money, get_current_transaction
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
+
+params = {"access_token": os.environ["PAGE_ACCESS_TOKEN"]}
+headers = {"Content-Type": "application/json"}
 
 
 def process_message(msg: Messaging, event: Event):
@@ -90,14 +93,6 @@ def process_message(msg: Messaging, event: Event):
                                      secondSurname=verify["secondSurname"],
                                      birthDate=verify["birthDate"],
                                      expDate=verify["expDate"]), event)
-
-            # db.users.update({"id": sender.id},
-            #                {"$set": {"registerStatus": 6,
-            #                          "statusDate": datetime.now()}})
-            # send_message(sender.id, get_speech("document_response"), event)
-
-        # payload = Payload(**attachments.payload)
-        # coodinates = Coordinates(**payload.coordinates)
 
 
 def process_quick_reply(message, sender, event):
@@ -247,7 +242,7 @@ def process_quick_reply(message, sender, event):
             print(type(item))
 
         if action[1] is "N":
-            send_payment_receipt(transaction)
+            send_payment_receipt(transaction, db, event)
             return "OK", 200
 
         if action[1] is "Y":
@@ -283,6 +278,7 @@ def process_postback(msg: Messaging, event):
         else:
             send_operation(user, db, event)
         return True
+
     if "MY_FACE_IS_" in msg.postback["payload"]:
         faceId = msg.postback["payload"].split("_")[3]
         db.users.update({"id": sender.id},
@@ -555,9 +551,28 @@ def generate_response(user, text, event):
                             {'$set': {"operationStatus": 0}})
             return True
 
+    transaction = get_current_transaction(user)
+    if transaction["status"] == 2:
+        amount = only_numeric(text, amount=True)
+        if amount["rc"] is 0:
+            db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                                   {"$set": {"amount": amount["numbers"],
+                                             "status": 3}})
+            options = [
+                {"content_type": "text", "title": "Si", "payload": "TRX_Y_MSG_" + str(transaction["_id"])},
+                {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
+            send_options(user["id"], options, "te gustaria enviar una descripción de tu pago?")
+            return True
+
+    if transaction["status"] == 3 and "payment" in concepts:
+        transaction["description"] = text
+        send_payment_receipt(transaction)
+        return True
+
     if len(concepts) == 0:
         msg_text = get_speech("wellcome").format(user["first_name"])
         send_message(user["id"], msg_text, event)
+        return True
 
 
 def send_tyc(sender, user, event):
