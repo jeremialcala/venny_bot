@@ -65,3 +65,11 @@ def get_user_face(user, event):
     return requests.post(url=img_proc_url, headers=headers, data=json.dumps(data))
 
 
+def validate_user_document(user, event):
+    event.update("PRO", datetime.now(), "Processing validate_user_document")
+    headers = {"Content-Type": "application/json"}
+    img_proc_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "verify"
+    data = {"imgUrl": user["profile_pic"], "imgType": ".jpg", "docType": user["document"]["documentType"],
+            "faceId": user["faceId"]}
+    return requests.post(url=img_proc_url, headers=headers, data=json.dumps(data))
+

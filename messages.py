@@ -7,7 +7,7 @@ import requests
 from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
-from services import user_origination, get_user_face
+from services import user_origination, get_user_face, validate_user_document
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
@@ -68,10 +68,29 @@ def process_message(msg: Messaging, event: Event):
 
         if user["registerStatus"] == 5:
             send_message(sender.id, get_speech("validating"), event)
-            db.users.update({"id": sender.id},
-                            {"$set": {"registerStatus": 6,
-                                      "statusDate": datetime.now()}})
-            send_message(sender.id, get_speech("document_response"), event)
+            user["profile_pic"] = attachments.payload["url"]
+            document = validate_user_document(user, event)
+            if document.status_code == 200:
+                verify = json.loads(document.text)
+                if not verify["match"]:
+                    send_message(sender.id, get_speech("document_face_not_match"))
+                    return True
+                options = [{"content_type": "text", "title": "Correcto!", "payload": "RIGHT_DATA_PAYLOAD"},
+                           {"content_type": "text", "title": "Esta mal!", "payload": "WRONG_DATA_PAYLOAD"}]
+                send_options(sender.id, options, get_speech("document_information")
+                             .format(firstName=user["firstName"],
+                                     number=verify["number"],
+                                     firstPName=verify["firstName"],
+                                     middleName=verify["middleName"],
+                                     lastName=verify["lastName"],
+                                     secondSurname=verify["secondSurname"],
+                                     birthDate=verify["birthDate"],
+                                     expDate=verify["expDate"]), event)
+
+            # db.users.update({"id": sender.id},
+            #                {"$set": {"registerStatus": 6,
+            #                          "statusDate": datetime.now()}})
+            # send_message(sender.id, get_speech("document_response"), event)
 
         # payload = Payload(**attachments.payload)
         # coodinates = Coordinates(**payload.coordinates)
@@ -129,7 +148,9 @@ def process_quick_reply(message, sender, event):
     if "PASSPORT_PAYLOAD" in message.quick_reply["payload"]:
         db.users.update({"id": sender.id},
                         {"$set": {"registerStatus": 5,
-                                  "statusDate": datetime.now()}})
+                                  "statusDate": datetime.now(),
+                                  "document": {"documentType": "Passport"}}})
+
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 

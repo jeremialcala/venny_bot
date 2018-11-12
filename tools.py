@@ -11,6 +11,7 @@ from urllib.request import urlretrieve
 from datetime import datetime
 from bson import ObjectId
 import objects
+from messages import get_speech
 
 params = {"access_token": os.environ["PAGE_ACCESS_TOKEN"]}
 headers = {"Content-Type": "application/json"}
