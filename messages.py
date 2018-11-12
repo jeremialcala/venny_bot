@@ -4,6 +4,7 @@ from datetime import datetime
 from urllib.request import urlretrieve
 
 import requests
+from bson import ObjectId
 from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
@@ -120,6 +121,7 @@ def process_quick_reply(message, sender, event):
             event.update("PRO", datetime.now(), "user {} accepted tyc successfully".format(sender.id))
 
         return True
+
     if "REJECT_PAYLOAD" in message.quick_reply["payload"]:
         event.update("PRO", datetime.now(), "user {} reject tyc!".format(sender.id))
         generate_response(who_send(sender), message.quick_reply["payload"], event)
@@ -215,6 +217,26 @@ def process_quick_reply(message, sender, event):
             send_operation(user, db, event)
         else:
             send_message(sender.id, get_speech("account_creation_fail"), event)
+
+    if "SEND_" in message.quick_reply["payload"]:
+        action = message.quick_reply["payload"].split("_")
+        transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
+        if transaction is None:
+            send_message(user["id"], "oye " + user["fist_name"]
+                         + ", no recuerdo a quien querias enviar dinero.", event)
+            return "OK", 200
+
+        if "OTHER" in message.quick_reply["payload"]:
+            send_message(user["id"], "indicame el monto que quieres enviar", event)
+            return "OK", 200
+
+        db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                               {"$set": {"amount": action[1],
+                                         "status": 3}})
+
+        options = [{"content_type": "text", "title": "Si", "payload": "TRX_Y_MSG_" + str(transaction["_id"])},
+                   {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
+        send_options(user["id"], options, get_speech("money_send_description"), event)
 
 
 def process_postback(msg: Messaging, event):
@@ -472,9 +494,6 @@ def get_concept(text, event):
 def generate_response(user, text, event):
     concepts = get_concept(text=text, event=event)
     db = Database(os.environ["SCHEMA"]).get_schema()
-    if len(concepts) == 0:
-        msg_text = get_speech("wellcome").format(user["first_name"])
-        send_message(user["id"], msg_text, event)
 
     if "my_name" in concepts and user["registerStatus"] == 11:
         elements = []
@@ -507,6 +526,10 @@ def generate_response(user, text, event):
             db.users.update({"id": user['id']},
                             {'$set': {"operationStatus": 0}})
             return True
+
+    if len(concepts) == 0:
+        msg_text = get_speech("wellcome").format(user["first_name"])
+        send_message(user["id"], msg_text, event)
 
 
 def send_tyc(sender, user, event):
