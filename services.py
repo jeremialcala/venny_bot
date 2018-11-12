@@ -149,7 +149,7 @@ def get_user_movements(user, db, event, mov_id=None):
 
             mov_id = db.movements.insert(movements)
             movements["_id"] = mov_id
-            create_mov_attachment(user, movements)
+            create_mov_attachment(user, movements, db)
             return "OK", 200
         elif api_response.status_code == 404:
             send_message(user["id"], "No tienes movimientos registrados.")
