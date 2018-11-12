@@ -201,7 +201,7 @@ def process_quick_reply(message, sender, event):
             db.users.update({"id": sender.id},
                             {'$set': {"registerStatus": 11,
                                       "statusDate": datetime.now()}})
-            send_operation(user, db)
+            send_operation(user, db, event)
         else:
             send_message(sender.id, get_speech("account_creation_fail"), event)
 
