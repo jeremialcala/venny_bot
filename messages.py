@@ -247,7 +247,7 @@ def process_postback(msg: Messaging, event):
         get_user_balance(user, db, event)
         return True
 
-    if "MOVEMENTS_" in msg.postback["payload"]:
+    if "MOVEMENT" in msg.postback["payload"]:
         if "PAYLOAD" not in msg.postback["payload"]:
             mov_id = msg.postback["payload"].split("_")
             print(mov_id[1])
