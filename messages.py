@@ -195,7 +195,7 @@ def process_quick_reply(message, sender, event):
     if "ACCOUNT_CONFIRM_PAYLOAD" in message.quick_reply["payload"]:
         send_message(sender.id, get_speech("account_creation_start"), event)
         user = who_send(sender)
-        origination = user_origination(user, db, event=event)
+        origination = user_origination(user, db, event)
         if origination[1] == 200:
             send_message(sender.id, get_speech("account_creation_success"), event)
             db.users.update({"id": sender.id},
