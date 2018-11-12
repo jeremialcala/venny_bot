@@ -7,7 +7,8 @@ import requests
 from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
-from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance
+from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance, \
+    get_user_movements
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
@@ -246,6 +247,10 @@ def process_postback(msg: Messaging, event):
         get_user_balance(user, db, event)
         return True
 
+    if "MOVEMENTS_PAYLOAD" in msg.postback["payload"]:
+        get_user_movements(user, db, event)
+        return True
+
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
         return True
 
@@ -462,6 +467,10 @@ def generate_response(user, text, event):
 
     if "balance" in concepts and user["registerStatus"] == 11:
         get_user_balance(user, db, event)
+        return True
+
+    if "movements" in concepts and user["registerStatus"] == 11:
+        get_user_movements(user, db, event)
         return True
 
 
