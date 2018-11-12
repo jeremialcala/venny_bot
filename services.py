@@ -317,6 +317,7 @@ def get_current_transaction(user):
         return ccurr_transaction
 
     for transaction in transactions:
+        print(transaction)
         transactionTime = datetime.now() - transaction["status-date"]
         print(transactionTime.seconds)
         if transactionTime.seconds > 180:
