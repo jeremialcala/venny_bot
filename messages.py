@@ -135,8 +135,8 @@ def process_quick_reply(message, sender, event):
         db.users.update({"id": sender.id},
                         {"$set": {"registerStatus": 3,
                                   "statusDate": datetime.now()}})
-        options = [{"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"},
-                   {"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"}]
+        options = [{"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"},
+                   {"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"}]
         send_options(sender.id, options, get_speech("origination"), event)
         return True
 
@@ -151,7 +151,7 @@ def process_quick_reply(message, sender, event):
         db.users.update({"id": sender.id},
                         {"$set": {"registerStatus": 5,
                                   "statusDate": datetime.now(),
-                                  "document": {"documentType": "Passport"}}})
+                                  "document": {"documentType": "passporte"}}})
 
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
@@ -303,7 +303,8 @@ def is_registering(msg, event):
                                                                                       number=verify["mrz"]
                                                                                       ["number"]), event)
                     db.users.update({"id": sender.id},
-                                    {"$set": {"document": {"documentNumber": verify["mrz"]["number"]},
+                                    {"$set": {"document": {"documentType": "passporte",
+                                                           "documentNumber": verify["mrz"]["number"]},
                                               "registerStatus": 6,
                                               "statusDate": datetime.now()}})
                     options = [{"content_type": "location"}]
