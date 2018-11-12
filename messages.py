@@ -7,7 +7,7 @@ import requests
 from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
-from services import user_origination, get_user_face, validate_user_document
+from services import user_origination, get_user_face, validate_user_document, create_user_card
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
@@ -197,10 +197,20 @@ def process_quick_reply(message, sender, event):
         user = who_send(sender)
         origination = user_origination(user, db, event)
         if origination[1] == 200:
+            card = create_user_card(user, event)
+            if card.status_code == 200:
+                card_data = json.loads(card.text)
+                db.users.update({"id": sender.id},
+                                {'$set': {"registerStatus": 11,
+                                          "statusDate": datetime.now(),
+                                          "cardId": card_data["card"]["_id"]}})
+            else:
+                db.users.update({"id": sender.id},
+                                {'$set': {"registerStatus": 11,
+                                          "statusDate": datetime.now()}})
+
             send_message(sender.id, get_speech("account_creation_success"), event)
-            db.users.update({"id": sender.id},
-                            {'$set': {"registerStatus": 11,
-                                      "statusDate": datetime.now()}})
+
             send_operation(user, db, event)
         else:
             send_message(sender.id, get_speech("account_creation_fail"), event)

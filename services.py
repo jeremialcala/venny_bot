@@ -74,3 +74,14 @@ def validate_user_document(user, event):
     data = {"imgUrl": user["profile_pic"], "imgType": ".jpg", "docType": user["document"]["documentType"],
             "faceId": user["faceId"]}
     return requests.post(url=img_proc_url, headers=headers, data=json.dumps(data))
+
+
+def create_user_card(user, event):
+    event.update("PRO", datetime.now(), "Processing validate_user_document")
+    db = Database("venny").get_schema()
+    account = db.accountPool.find_one({"_id": user["accountId"]})
+    headers = {"Content-Type": "application/json"}
+    img_proc_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card"
+    data = {"firstName": user["first_name"], "lastName": user["last_name"], "account": account["cardNumber"],
+            "faceId": user["faceId"]}
+    return requests.post(url=img_proc_url, headers=headers, data=json.dumps(data))
