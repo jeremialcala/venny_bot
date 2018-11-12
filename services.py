@@ -79,6 +79,7 @@ def validate_user_document(user, event):
 def create_user_card(user, event):
     event.update("PRO", datetime.now(), "Processing validate_user_document")
     db = Database("venny").get_schema()
+    user = db.users.find_one({"id": user["id"]})
     account = db.accountPool.find_one({"_id": user["accountId"]})
     headers = {"Content-Type": "application/json"}
     img_proc_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card"
