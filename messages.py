@@ -434,7 +434,7 @@ def get_concept(text, event):
     concepts = []
     for word in text.split(" "):
         event.update("PRO", datetime.now(), "looking for word {}".format(word))
-        csr = db.dictionary.find({"words": word})
+        csr = db.dictionary.find({"words": str(word).lower()})
         for concept in csr:
             concepts.append(concept["concept"])
 
