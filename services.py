@@ -209,6 +209,77 @@ def create_mov_attachment(user, mov_list, db):
                         {'$set': {"page": mov_count}})
 
 
+def execute_send_money(transaction, db, event):
+    print(transaction)
+    api_headers = {"x-country": "Usd",
+                   "language": "es",
+                   "channel": "API",
+                   "accept": "application/json",
+                   "Content-Type": "application/json",
+                   "Authorization": "Bearer $OAUTH2TOKEN$"}
+
+    api_headers["Authorization"] = api_headers["Authorization"] \
+        .replace("$OAUTH2TOKEN$", os.environ["NP_OAUTH2_TOKEN"])
+
+    sender = db.users.find_one({"id": transaction["sender"]})
+    print(sender)
+    account_s = db.accountPool.find_one({"_id": ObjectId(sender["accountId"])})
+
+    url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] + \
+          account_s["indx"] + "/employee/" + sender["document"]["documentNumber"] + \
+          "/debit-inq?trxid=" + str(random_with_n_digits(10))
+
+    data = {"description": "Envio de dinero FB", "amount": transaction["amount"],
+            "fee": "0.00", "ref-number": str(transaction["_id"])}
+    api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method=None, event=event)
+    response = json.loads(api_response.text)
+    print(response)
+
+    if api_response.status_code == 200:
+        recipient = db.users.find_one({"id": transaction["recipient"]})
+        account = db.accountPool.find_one({"_id": ObjectId(recipient["accountId"])})
+        url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] \
+              + account["indx"] + "/employee/" + recipient["document"]["documentNumber"] \
+              + "/credit-inq?trxid=" + str(random_with_n_digits(10))
+        api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method=None)
+        if api_response.status_code == 200:
+            send_message(sender["id"], "envio de dinero exitoso")
+            send_message(recipient["id"], "Hola " + recipient["first_name"] + " hemos depositado en tu cuenta "
+                         + transaction["amount"] + " a nombre de " + sender["first_name"])
+            db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                                   {"$set": {"status": 5, "observations": response["msg"]}})
+            return "OK", 200
+        else:
+            url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] \
+                  + account_s["indx"] + "/employee/" + sender["document"]["documentNumber"] \
+                  + "/credit-inq?trxid=" + str(random_with_n_digits(10))
+            data = {"description": "Reverso envio de dinero FB", "amount": transaction["amount"],
+                    "fee": "0.00", "ref-number": str(transaction["_id"])}
+            api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method="GET")
+            if api_response.status_code == 200:
+                send_message(sender["id"], "no logramos hacer el envio, hemos ya reversado los fondos en tu cuenta.")
+                db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                                       {"$set": {"status": 6, "observations": response["msg"]}})
+    elif api_response.status_code == 400:
+        response = json.loads(api_response.text)
+        if response["rc"] == "51":
+            send_message(sender["id"], "no cuentas con suficiente saldo, recarga el saldo en tu cuenta "
+                                       "o intenta con un monto menor")
+            db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                                   {"$set": {"status": 6, "observations": response["msg"]}})
+            return "OK", 200
+        else:
+            send_message(sender["id"], response["msg"])
+            db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                                   {"$set": {"status": 6}})
+            return "OK", 200
+    else:
+        send_message(sender["id"], "no logramos hacer el envio, por favor intenta mas tarde.")
+        db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                               {"$set": {"status": 6, "observations": response["msg"]}})
+        return "OK", 200
+
+
 def get_user_face(user, event):
     event.update("PRO", datetime.now(), "Processing get_user_face")
     headers = {"Content-Type": "application/json"}
@@ -236,3 +307,53 @@ def create_user_card(user, event):
     data = {"firstName": user["first_name"], "lastName": user["last_name"], "account": account["cardNumber"],
             "faceId": user["faceId"]}
     return requests.post(url=img_proc_url, headers=headers, data=json.dumps(data))
+
+
+def get_current_transaction(user):
+    db = Database(os.environ["SCHEMA"]).get_schema()
+    transactions = db.transactions.find({"sender": user["id"], "status": {"$gte": 2, "$lte": 3}})
+    ccurr_transaction = {"status": 0, "observation": "Not Transaction found"}
+    if transactions is None:
+        return ccurr_transaction
+
+    for transaction in transactions:
+        transactionTime = datetime.now() - transaction["status-date"]
+        print(transactionTime.seconds)
+        if transactionTime.seconds > 180:
+            db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                                   {"$set": {"status": 0}})
+        else:
+            return transaction
+
+    return ccurr_transaction
+
+
+def get_user_by_name(name, operation, db):
+    if len(name) > 1:
+        criteria = {"first_name": {"$regex": name[0]}, "last_name": {"$regex": name[1]}}
+    else:
+        criteria = {"first_name": {"$regex": name[0]}}
+    print(criteria)
+    result = db.users.find(criteria)
+
+    attachment = {"type": "template"}
+    payload = {"template_type": "generic", "elements": []}
+    print(result.count())
+    if result.count() is 0:
+        return "No se encontraron usuarios", 404
+    else:
+        for friend in result:
+            buttons = {}
+            elements = {"buttons": [], "title": friend["first_name"] + " " + friend["last_name"],
+                        "subtitle": friend["location"]["Address"]["Label"],
+                        "image_url": friend["profile_pic"]}
+            buttons["title"] = "Enviar Dinero"
+            buttons["type"] = "postback"
+            buttons["payload"] = operation + "|" + friend["id"]
+            elements["buttons"].append(buttons)
+            payload["elements"].append(elements)
+        if result.count() > 1:
+            payload["template_type"] = "list"
+            payload["top_element_style"] = "compact"
+        attachment["payload"] = payload
+        return "OK", 200, attachment

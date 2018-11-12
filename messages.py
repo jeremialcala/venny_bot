@@ -8,7 +8,7 @@ from twilio.rest import Client
 
 from objects import Messaging, Message, Attachments, Payload, Coordinates, Sender, Database, Event, ImgRequest, Element
 from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance, \
-    get_user_movements
+    get_user_movements, get_current_transaction, get_user_by_name
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 
@@ -257,6 +257,11 @@ def process_postback(msg: Messaging, event):
         return True
 
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
+        curr_trx = get_current_transaction(user)
+        if curr_trx["status"] != 0:
+            send_message(sender.id, get_speech("money_send_start"), event)
+            db.users.update({"id": user['id']},
+                            {'$set': {"operationStatus": 1}})
         return True
 
 
@@ -403,6 +408,7 @@ def who_send(sender: Sender):
         user = json.loads(get_user_by_id(sender.id))
         user["tyc"] = False
         user["registerStatus"] = 0
+        user["operationStatus"] = 0
         db.users.insert_one(user)
     else:
         for doc in result:
@@ -477,6 +483,19 @@ def generate_response(user, text, event):
     if "movements" in concepts and user["registerStatus"] == 11:
         get_user_movements(user, db, event)
         return True
+
+    if user["operationStatus"] == 1:
+        rsp = get_user_by_name(name=text.split(" "), operation="SEND_MONEY", db=db)
+        print(rsp)
+        if rsp[1] == 200:
+            send_message(user["id"], "")
+            attachment = rsp[2]
+            rsp_message = {"attachment": attachment}
+            send_attachment(user["id"], rsp_message, event)
+            db.users.update({"id": user['id']},
+                            {'$set': {"operationStatus": 0}})
+            return True
+
 
 
 def send_tyc(sender, user, event):
