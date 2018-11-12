@@ -247,8 +247,11 @@ def process_postback(msg: Messaging, event):
         get_user_balance(user, db, event)
         return True
 
-    if "MOVEMENTS_PAYLOAD" in msg.postback["payload"]:
-        get_user_movements(user, db, event)
+    if "MOVEMENTS_" in msg.postback["payload"]:
+        if "PAYLOAD" not in msg.postback["payload"]:
+            get_user_movements(user, db, event)
+        else:
+            get_user_movements(user, db, event, msg.postback["payload"].split("_")[1])
         return True
 
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
