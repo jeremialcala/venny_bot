@@ -239,9 +239,9 @@ def process_quick_reply(message, sender, event):
                    {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
         send_options(user["id"], options, get_speech("money_send_description"), event)
 
-    if "SEND_" in message.quick_reply["payload"]:
+    if "TRX_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
-        transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
+        transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
 
         for item in action:
             print(type(item))
