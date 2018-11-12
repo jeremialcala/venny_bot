@@ -63,7 +63,7 @@ def user_origination(user, db, event):
         return api_response.text, api_response.status_code
 
 
-def get_user_balance(user, db, event):
+def get_user_balance(user, event, db=Database("venny").get_schema()):
     account = db.accountPool.find_one({"_id": user["accountId"]})
 
     url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] \
