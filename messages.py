@@ -295,7 +295,7 @@ def is_registering(msg, event):
                 if document.status_code == 200:
                     verify = json.loads(document.text)
                     if not verify["match"]:
-                        send_message(sender.id, get_speech("document_face_not_match"))
+                        send_message(sender.id, get_speech("document_face_not_match"), event)
                         return True
                     options = [{"content_type": "text", "title": "Correcto!", "payload": "RIGHT_DATA_PAYLOAD"},
                                {"content_type": "text", "title": "Esta mal!", "payload": "WRONG_DATA_PAYLOAD"}]
