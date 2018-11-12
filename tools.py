@@ -123,7 +123,7 @@ def get_account_from_pool(db):
 
 
 def np_api_request(url, data, api_headers, event, api_params=None, http_method=None):
-    # event.update("PRO", datetime.now(), "Conectando a: " + url)
+    event.update("PRO", datetime.now(), "Conectando a: " + url)
     if http_method is "GET":
         api_response = requests.get(url, headers=api_headers)
     else:
