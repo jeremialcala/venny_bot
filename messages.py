@@ -241,7 +241,7 @@ def process_quick_reply(message, sender, event):
 
     if "SEND_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
-        transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
+        transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
 
         for item in action:
             print(type(item))
