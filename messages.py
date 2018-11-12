@@ -220,7 +220,7 @@ def process_postback(msg: Messaging, event):
         elif is_registering(msg, event):
             return True
         else:
-            send_operation(user, db)
+            send_operation(user, db, event)
         return True
     if "MY_FACE_IS_" in msg.postback["payload"]:
         faceId = msg.postback["payload"].split("_")[3]
