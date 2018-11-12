@@ -251,8 +251,8 @@ def process_quick_reply(message, sender, event):
             return "OK", 200
 
         if "CONFIRM" in message.quick_reply["payload"]:
-            send_message(user["id"], "Ejecutando")
-            execute_send_money(transaction, db)
+            send_message(user["id"], "Ejecutando", event)
+            execute_send_money(transaction, db, event)
             return "OK", 200
 
         if "CANCEL" in message.quick_reply["payload"]:
