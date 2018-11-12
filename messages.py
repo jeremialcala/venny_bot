@@ -309,6 +309,7 @@ def is_registering(msg, event):
                                          secondSurname=verify["mrz"]["secondSurname"],
                                          birthDate=verify["mrz"]["birthDate"],
                                          expDate=verify["mrz"]["expDate"]), event)
+                    return True
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 
