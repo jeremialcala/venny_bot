@@ -263,6 +263,19 @@ def process_postback(msg: Messaging, event):
 
         return True
 
+    if "SEND_MONEY" in msg.postback["payload"]:
+        action = msg.postback["payload"].split("|")
+        friend = db.users.find_one({"id": action[1]})
+        transaction = {"sender": user["id"], "recipient": friend["id"], "type": 1, "status": 2,
+                       "status-date": datetime.now()}
+        transaction_id = db.transactions.insert(transaction)
+
+        options = [{"content_type": "text", "title": "$2", "payload": "SEND_2_" + str(transaction_id)},
+                   {"content_type": "text", "title": "$5", "payload": "SEND_5_" + str(transaction_id)},
+                   {"content_type": "text", "title": "$10", "payload": "SEND_10_" + str(transaction_id)},
+                   {"content_type": "text", "title": "Otro", "payload": "SEND_CUSTOM_" + str(transaction_id)}]
+        send_options(sender.id, options, get_speech("money_send_amount"), event)
+
 
 def is_registering(msg, event):
     event.update("PRO", datetime.now(), "Processing is_registered")
