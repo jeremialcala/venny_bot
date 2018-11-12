@@ -249,7 +249,9 @@ def process_postback(msg: Messaging, event):
 
     if "MOVEMENTS_" in msg.postback["payload"]:
         if "PAYLOAD" not in msg.postback["payload"]:
-            get_user_movements(user, db, event, msg.postback["payload"].split("_")[1])
+            mov_id = msg.postback["payload"].split("_")
+            print(mov_id[1])
+            get_user_movements(user, db, event)
             return True
         get_user_movements(user, db, event)
         return True
