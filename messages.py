@@ -71,6 +71,7 @@ def process_message(msg: Messaging, event: Event):
             send_message(sender.id, get_speech("validating"), event)
             user["profile_pic"] = attachments.payload["url"]
             document = validate_user_document(user, event)
+            print(document.text)
             if document.status_code == 200:
                 verify = json.loads(document.text)
                 if not verify["match"]:
@@ -288,13 +289,25 @@ def is_registering(msg, event):
         if message.attachments is not None:
             if message.attachments[0]["type"] == "image":
                 send_message(sender.id, get_speech("validating"), event)
-                db.users.update({"id": sender.id},
-                                {"$set": {"registerStatus": 6,
-                                          "statusDate": datetime.now()}})
-                send_message(sender.id, get_speech("document_response"), event)
-                options = [{"content_type": "location"}]
-                send_options(sender.id, options, get_speech("gimme_location"), event)
-                return True
+                user["profile_pic"] = message.attachments[0]["payload"]["url"]
+                document = validate_user_document(user, event)
+                print(document.text)
+                if document.status_code == 200:
+                    verify = json.loads(document.text)
+                    if not verify["match"]:
+                        send_message(sender.id, get_speech("document_face_not_match"))
+                        return True
+                    options = [{"content_type": "text", "title": "Correcto!", "payload": "RIGHT_DATA_PAYLOAD"},
+                               {"content_type": "text", "title": "Esta mal!", "payload": "WRONG_DATA_PAYLOAD"}]
+                    send_options(sender.id, options, get_speech("document_information")
+                                 .format(firstName=user["firstName"],
+                                         number=verify["number"],
+                                         firstPName=verify["firstName"],
+                                         middleName=verify["middleName"],
+                                         lastName=verify["lastName"],
+                                         secondSurname=verify["secondSurname"],
+                                         birthDate=verify["birthDate"],
+                                         expDate=verify["expDate"]), event)
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 
