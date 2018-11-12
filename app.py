@@ -27,29 +27,32 @@ def verify():
 def get_message():
     data = request.get_json()
     print(json.dumps(data))
-    if "standby" in data["entry"][0]:
-        Event(data["entry"][0]["standby"][0]["sender"]["id"], datetime.now(), "get_message", "INI", datetime.now(),
-              "New Message from {}".format(data["entry"][0]["standby"][0]["sender"]["id"]))
-        return "OK", 200
+    try:
+        if "standby" in data["entry"][0]:
+            Event(data["entry"][0]["standby"][0]["sender"]["id"], datetime.now(), "get_message", "INI", datetime.now(),
+                  "New Message from {}".format(data["entry"][0]["standby"][0]["sender"]["id"]))
+            return "OK", 200
 
-    event = Event(data["entry"][0]["messaging"][0]["sender"]["id"], datetime.now(), "get_message", "INI", datetime.now(),
-                  "New Message from {}".format(data["entry"][0]["messaging"][0]["sender"]["id"]))
+        event = Event(data["entry"][0]["messaging"][0]["sender"]["id"], datetime.now(), "get_message", "INI", datetime.now(),
+                      "New Message from {}".format(data["entry"][0]["messaging"][0]["sender"]["id"]))
 
-    # event.update("OK ", datetime.now(), json.dumps(data))
-    entry = Entry(**data["entry"][0])
-    message = Messaging(**entry.messaging[0])
-    if "message" in entry.messaging[0]:
-        process_message(message, event)
+        # event.update("OK ", datetime.now(), json.dumps(data))
+        entry = Entry(**data["entry"][0])
+        message = Messaging(**entry.messaging[0])
+        if "message" in entry.messaging[0]:
+            process_message(message, event)
+            event.update("OK ", datetime.now(), "Receive OK!")
+            return "OK", 200
+
+        if "postback" in entry.messaging[0]:
+            process_postback(message, event)
+            event.update("OK ", datetime.now(), "Receive OK!")
+            return "OK", 200
+
         event.update("OK ", datetime.now(), "Receive OK!")
         return "OK", 200
-
-    if "postback" in entry.messaging[0]:
-        process_postback(message, event)
-        event.update("OK ", datetime.now(), "Receive OK!")
+    except Exception as e:
         return "OK", 200
-
-    event.update("OK ", datetime.now(), "Receive OK!")
-    return "OK", 200
 
 
 if __name__ == '__main__':
