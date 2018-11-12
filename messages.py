@@ -257,11 +257,10 @@ def process_postback(msg: Messaging, event):
         return True
 
     if "PAYBILL_PAYLOAD" in msg.postback["payload"]:
-        curr_trx = get_current_transaction(user)
-        if curr_trx["status"] != 0:
-            send_message(sender.id, get_speech("money_send_start"), event)
-            db.users.update({"id": user['id']},
-                            {'$set': {"operationStatus": 1}})
+        send_message(sender.id, get_speech("money_send_start"), event)
+        db.users.update({"id": user['id']},
+                        {'$set': {"operationStatus": 1}})
+
         return True
 
 
