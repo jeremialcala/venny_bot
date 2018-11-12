@@ -43,10 +43,12 @@ def user_origination(user, db):
 
     api_headers["Authorization"] = api_headers["Authorization"].replace("$OAUTH2TOKEN$", os.environ["NP_OAUTH2_TOKEN"])
 
-    url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] \
-          + account["indx"] + "/employee?trxid=" + str(random_with_n_digits(10))
+    url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] + \
+          account["indx"] + "/employee?trxid=" + str(random_with_n_digits(10))
+    print(url)
 
-    api_response = np_api_request(url=url, data=data, api_headers=api_headers)
+    api_response = np_api_request(url=url, data=json.dumps(data), api_headers=api_headers)
+    print(api_response.text)
     if api_response.status_code == 200:
         db.accountPool.update({"_id": ObjectId(account["_id"])},
                               {"$set": {"codMisc": "AF"}})
@@ -72,4 +74,3 @@ def validate_user_document(user, event):
     data = {"imgUrl": user["profile_pic"], "imgType": ".jpg", "docType": user["document"]["documentType"],
             "faceId": user["faceId"]}
     return requests.post(url=img_proc_url, headers=headers, data=json.dumps(data))
-
