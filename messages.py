@@ -443,13 +443,13 @@ def get_concept(text, event):
 
 def generate_response(user, text, event):
     concepts = get_concept(text=text, event=event)
+    db = Database(os.environ["SCHEMA"]).get_schema()
     if len(concepts) == 0:
         msg_text = get_speech("wellcome").format(user["first_name"])
         send_message(user["id"], msg_text, event)
 
     if "my_name" in concepts and user["registerStatus"] == 11:
         elements = []
-        db = Database(os.environ["SCHEMA"]).get_schema()
         csr = db.operations.find()
         for elem in csr:
             elem = Element(**elem)
