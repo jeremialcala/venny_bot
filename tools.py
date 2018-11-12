@@ -127,7 +127,7 @@ def np_api_request(url, data, api_headers, event, api_params=None, http_method=N
     if http_method is "GET":
         api_response = requests.get(url, headers=api_headers)
     else:
-        log("Data:" + json.dumps(data))
+        print("Data:" + json.dumps(data))
         api_response = requests.post(url, params=api_params, headers=api_headers, data=json.dumps(data))
 
     event.update("PRO", datetime.now(), "response: " + api_response.text)
