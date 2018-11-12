@@ -103,6 +103,8 @@ def process_message(msg: Messaging, event: Event):
 def process_quick_reply(message, sender, event):
     event.update("PRO", datetime.now(), "Processing quick_reply")
     db = Database(os.environ["SCHEMA"]).get_schema()
+    user = who_send(sender)
+
     if "ACCEPT_PAYLOAD" in message.quick_reply["payload"]:
         user = who_send(sender)
         face = get_user_face(user, event)
@@ -197,7 +199,6 @@ def process_quick_reply(message, sender, event):
 
     if "ACCOUNT_CONFIRM_PAYLOAD" in message.quick_reply["payload"]:
         send_message(sender.id, get_speech("account_creation_start"), event)
-        user = who_send(sender)
         origination = user_origination(user, db, event)
         if origination[1] == 200:
             card = create_user_card(user, event)
