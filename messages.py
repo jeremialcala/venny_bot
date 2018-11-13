@@ -731,3 +731,5 @@ def send_payment_receipt(transaction, db, event):
         {"content_type": "text", "title": "Cancelar", "payload": "TRX_DO_CANCEL_" + str(transaction["_id"])}]
 
     send_options(user["id"], options, get_speech("money_send_confirm"), event)
+    if transaction["type"] == 2:
+        send_message(transaction["recipient"], get_speech("money_collect_confirm").format(user["first_name"]), event)
