@@ -187,7 +187,6 @@ def create_mov_attachment(user, mov_list, db):
                 "subtitle": "💰" + mov_list["movements"][mov_count]["mov-amount"] +
                             "\n🗓️" + mov_list["movements"][mov_count]["mov-date"]
             })
-        print(mov_list)
         mov_count = mov_count + 1
 
     if len(payload["elements"]) > 1:
@@ -243,7 +242,7 @@ def execute_send_money(transaction, db, event):
               + "/credit-inq?trxid=" + str(random_with_n_digits(10))
         api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method=None, event=event)
         if api_response.status_code == 200:
-            send_message(sender["id"], "envio de dinero exitoso", event)
+            send_message(sender["id"], "Envio de dinero exitoso", event)
             send_message(recipient["id"], "Hola " + recipient["first_name"] + " hemos depositado en tu cuenta "
                          + transaction["amount"] + " a nombre de " + sender["first_name"], event)
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
@@ -257,13 +256,13 @@ def execute_send_money(transaction, db, event):
                     "fee": "0.00", "ref-number": str(transaction["_id"])}
             api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method="GET", event=event)
             if api_response.status_code == 200:
-                send_message(sender["id"], "no logramos hacer el envio, hemos ya reversado los fondos en tu cuenta.", event)
+                send_message(sender["id"], "No logramos hacer el envio, hemos ya reversado los fondos en tu cuenta.", event)
                 db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                        {"$set": {"status": 6, "observations": response["msg"]}})
     elif api_response.status_code == 400:
         response = json.loads(api_response.text)
         if response["rc"] == "51":
-            send_message(sender["id"], "no cuentas con suficiente saldo, recarga el saldo en tu cuenta "
+            send_message(sender["id"], "No cuentas con suficiente saldo, recarga el saldo en tu cuenta "
                                        "o intenta con un monto menor", event)
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                    {"$set": {"status": 6, "observations": response["msg"]}})
@@ -274,7 +273,7 @@ def execute_send_money(transaction, db, event):
                                    {"$set": {"status": 6}})
             return "OK", 200
     else:
-        send_message(sender["id"], "no logramos hacer el envio, por favor intenta mas tarde.", event)
+        send_message(sender["id"], "No logramos hacer el envio, por favor intenta mas tarde.", event)
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                {"$set": {"status": 6, "observations": response["msg"]}})
         return "OK", 200
