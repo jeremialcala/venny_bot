@@ -276,7 +276,7 @@ def process_quick_reply(message, sender, event):
             return "OK", 200
 
         if "CANCEL" in message.quick_reply["payload"]:
-            send_message(user["id"], "Vale! cancelamos tu transaccion")
+            send_message(user["id"], "Vale! cancelamos tu transaccion", event)
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                    {"$set": {"status": 6}})
             return "OK", 200
