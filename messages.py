@@ -578,6 +578,18 @@ def generate_response(user, text, event):
         get_user_movements(user, db, event)
         return True
 
+    if "money_send" in concepts and user["registerStatus"] == 11:
+        send_message(user["id"], get_speech("money_send_start").format(user["first_name"]), event)
+        db.users.update({"id": user['id']},
+                        {'$set': {"operationStatus": 1}})
+        return True
+
+    if "money_collect" in concepts and user["registerStatus"] == 11:
+        send_message(user["id"], get_speech("money_send_start").format(user["first_name"]), event)
+        db.users.update({"id": user['id']},
+                        {'$set': {"operationStatus": 2}})
+        return True
+
     if user["operationStatus"] == 1:
         rsp = get_user_by_name(name=text.split(" "), operation="SEND_MONEY", db=db)
         print(rsp)
