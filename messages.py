@@ -250,9 +250,10 @@ def process_quick_reply(message, sender, event):
                                {"$set": {"amount": action[1],
                                          "status": 3}})
 
+        send_payment_receipt(transaction, db, event)
         options = [{"content_type": "text", "title": "Si", "payload": "TRX_Y_MSG_" + str(transaction["_id"])},
                    {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
-        send_options(user["id"], options, get_speech("money_collect_description"), event)
+        # send_options(user["id"], options, get_speech("money_collect_description"), event)
 
     if "TRX_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
@@ -344,8 +345,7 @@ def process_postback(msg: Messaging, event):
 
         options = [{"content_type": "text", "title": "$2", "payload": "SEND_2_" + str(transaction_id)},
                    {"content_type": "text", "title": "$5", "payload": "SEND_5_" + str(transaction_id)},
-                   {"content_type": "text", "title": "$10", "payload": "SEND_10_" + str(transaction_id)},
-                   {"content_type": "text", "title": "Otro", "payload": "SEND_CUSTOM_" + str(transaction_id)}]
+                   {"content_type": "text", "title": "$10", "payload": "SEND_10_" + str(transaction_id)}]
         send_options(sender.id, options, get_speech("money_send_amount"), event)
 
     if "COLLECT_MONEY" in msg.postback["payload"]:
@@ -357,8 +357,7 @@ def process_postback(msg: Messaging, event):
 
         options = [{"content_type": "text", "title": "$2", "payload": "COLLECT_2_" + str(transaction_id)},
                    {"content_type": "text", "title": "$5", "payload": "COLLECT_5_" + str(transaction_id)},
-                   {"content_type": "text", "title": "$10", "payload": "COLLECT_10_" + str(transaction_id)},
-                   {"content_type": "text", "title": "Otro", "payload": "COLLECT_CUSTOM_" + str(transaction_id)}]
+                   {"content_type": "text", "title": "$10", "payload": "COLLECT_10_" + str(transaction_id)}]
         send_options(sender.id, options, get_speech("money_collect_amount"), event)
 
 
