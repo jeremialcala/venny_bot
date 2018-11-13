@@ -234,6 +234,26 @@ def process_quick_reply(message, sender, event):
                    {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
         send_options(user["id"], options, get_speech("money_send_description"), event)
 
+    if "COLLECT_" in message.quick_reply["payload"]:
+        action = message.quick_reply["payload"].split("_")
+        transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
+        if transaction is None:
+            send_message(user["id"], "oye " + user["fist_name"]
+                         + ", no recuerdo a quien querias solicitar dinero.", event)
+            return "OK", 200
+
+        if "OTHER" in message.quick_reply["payload"]:
+            send_message(user["id"], "indicame el monto que quieres solicitar", event)
+            return "OK", 200
+
+        db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                               {"$set": {"amount": action[1],
+                                         "status": 3}})
+
+        options = [{"content_type": "text", "title": "Si", "payload": "TRX_Y_MSG_" + str(transaction["_id"])},
+                   {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
+        send_options(user["id"], options, get_speech("money_collect_description"), event)
+
     if "TRX_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
         transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
@@ -246,12 +266,12 @@ def process_quick_reply(message, sender, event):
             return "OK", 200
 
         if action[1] is "Y":
-            send_message(user["id"], "indicame la descripcion del envio?", event)
+            send_message(user["id"], "indicame la descripcion de la operación?", event)
             send_message(user["id"], "colocala asi: \"pago por\" + \"motivo del pago\" ", event)
             return "OK", 200
 
         if "CONFIRM" in message.quick_reply["payload"]:
-            send_message(user["id"], "Ejecutando", event)
+            send_message(transaction["sender"], "Ejecutando", event)
             execute_send_money(transaction, db, event)
             return "OK", 200
 
@@ -267,8 +287,8 @@ def process_postback(msg: Messaging, event):
     sender = Sender(**msg.sender)
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
-    event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
-                                                                                          , tyc=str(user["tyc"])))
+    event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"],
+                                                                                          tyc=str(user["tyc"])))
     db = Database(os.environ["SCHEMA"]).get_schema()
     if "GET_STARTED_PAYLOAD" in msg.postback["payload"]:
         if not user["tyc"]:
@@ -309,6 +329,12 @@ def process_postback(msg: Messaging, event):
 
         return True
 
+    if "COLLECT_PAYLOAD" in msg.postback["payload"]:
+        send_message(sender.id, get_speech("money_collect_start").format(user["first_name"]), event)
+        db.users.update({"id": user['id']},
+                        {'$set': {"operationStatus": 2}})
+        return True
+
     if "SEND_MONEY" in msg.postback["payload"]:
         action = msg.postback["payload"].split("|")
         friend = db.users.find_one({"id": action[1]})
@@ -321,6 +347,19 @@ def process_postback(msg: Messaging, event):
                    {"content_type": "text", "title": "$10", "payload": "SEND_10_" + str(transaction_id)},
                    {"content_type": "text", "title": "Otro", "payload": "SEND_CUSTOM_" + str(transaction_id)}]
         send_options(sender.id, options, get_speech("money_send_amount"), event)
+
+    if "COLLECT_MONEY" in msg.postback["payload"]:
+        action = msg.postback["payload"].split("|")
+        friend = db.users.find_one({"id": action[1]})
+        transaction = {"sender": friend["id"], "recipient": user["id"], "type": 1, "status": 2,
+                       "status-date": datetime.now()}
+        transaction_id = db.transactions.insert(transaction)
+
+        options = [{"content_type": "text", "title": "$2", "payload": "COLLECT_2_" + str(transaction_id)},
+                   {"content_type": "text", "title": "$5", "payload": "COLLECT_5_" + str(transaction_id)},
+                   {"content_type": "text", "title": "$10", "payload": "COLLECT_10_" + str(transaction_id)},
+                   {"content_type": "text", "title": "Otro", "payload": "COLLECT_CUSTOM_" + str(transaction_id)}]
+        send_options(sender.id, options, get_speech("money_collect_amount"), event)
 
 
 def is_registering(msg, event):
@@ -544,6 +583,18 @@ def generate_response(user, text, event):
         print(rsp)
         if rsp[1] == 200:
             send_message(user["id"], get_speech("money_send_select"), event)
+            attachment = rsp[2]
+            rsp_message = {"attachment": attachment}
+            send_attachment(user["id"], rsp_message, event)
+            db.users.update({"id": user['id']},
+                            {'$set': {"operationStatus": 0}})
+            return True
+
+    if user["operationStatus"] == 2:
+        rsp = get_user_by_name(name=text.split(" "), operation="COLLECT_MONEY", db=db)
+        print(rsp)
+        if rsp[1] == 200:
+            send_message(user["id"], get_speech("money_collect_select"), event)
             attachment = rsp[2]
             rsp_message = {"attachment": attachment}
             send_attachment(user["id"], rsp_message, event)

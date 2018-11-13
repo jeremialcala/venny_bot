@@ -348,7 +348,12 @@ def get_user_by_name(name, operation, db):
             elements = {"buttons": [], "title": friend["first_name"] + " " + friend["last_name"],
                         "subtitle": friend["location"]["desc"],
                         "image_url": friend["profile_pic"]}
-            buttons["title"] = "Enviar Dinero"
+
+            if operation is "SEND_MONEY":
+                buttons["title"] = "Enviar Dinero"
+            else:
+                buttons["title"] = "Solicitar Dinero"
+
             buttons["type"] = "postback"
             buttons["payload"] = operation + "|" + friend["id"]
             elements["buttons"].append(buttons)
