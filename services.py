@@ -131,7 +131,6 @@ def get_user_movements(user, db, event, mov_id=None):
         api_response = np_api_request(url=url, data=None, api_headers=api_headers, http_method="GET", event=event)
         if api_response.status_code == 200:
             response = json.loads(api_response.text)
-
             if "mov-list" in response:
                 movements = {
                     "userId": user["id"],
@@ -188,6 +187,7 @@ def create_mov_attachment(user, mov_list, db):
                 "subtitle": "💰" + mov_list["movements"][mov_count]["mov-amount"] +
                             "\n🗓️" + mov_list["movements"][mov_count]["mov-date"]
             })
+        print(mov_list)
         mov_count = mov_count + 1
 
     if len(payload["elements"]) > 1:
