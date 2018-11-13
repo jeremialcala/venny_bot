@@ -318,7 +318,7 @@ def process_postback(msg: Messaging, event):
         if "PAYLOAD" not in msg.postback["payload"]:
             mov_id = str(msg.postback["payload"]).split("_")
             print(mov_id[1])
-            get_user_movements(user, db, event)
+            get_user_movements(user, db, event, mov_id[1])
             return True
 
         get_user_movements(user, db, event)
