@@ -351,7 +351,7 @@ def process_postback(msg: Messaging, event):
     if "COLLECT_MONEY" in msg.postback["payload"]:
         action = msg.postback["payload"].split("|")
         friend = db.users.find_one({"id": action[1]})
-        transaction = {"sender": friend["id"], "recipient": user["id"], "type": 1, "status": 2,
+        transaction = {"sender": friend["id"], "recipient": user["id"], "type": 2, "status": 2,
                        "status-date": datetime.now()}
         transaction_id = db.transactions.insert(transaction)
 
