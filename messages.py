@@ -229,10 +229,10 @@ def process_quick_reply(message, sender, event):
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                {"$set": {"amount": action[1],
                                          "status": 3}})
-
+        send_payment_receipt(transaction, db, event)
         options = [{"content_type": "text", "title": "Si", "payload": "TRX_Y_MSG_" + str(transaction["_id"])},
                    {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
-        send_options(user["id"], options, get_speech("money_send_description"), event)
+        # send_options(user["id"], options, get_speech("money_send_description"), event)
 
     if "COLLECT_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
@@ -430,7 +430,7 @@ def is_registering(msg, event):
                                                                                       ["number"]), event)
                     db.users.update({"id": sender.id},
                                     {"$set": {"document": {"documentType": "passporte",
-                                                           "documentNumber": verify["mrz"]["number"]},
+                                                           "documentNumber": verify["mrz"]["number"][1:]},
                                               "registerStatus": 6,
                                               "statusDate": datetime.now()}})
                     options = [{"content_type": "location"}]
@@ -472,7 +472,7 @@ def is_registering(msg, event):
                         send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
                         return True
                     options = [
-                        {"content_type": "text", "title": "AUTORIZADO", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
+                        {"content_type": "text", "title": "Autorizar", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
                         {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
                     send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
                                  event)
