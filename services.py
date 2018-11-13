@@ -170,7 +170,7 @@ def get_user_movements(user, db, event, mov_id=None):
             send_message(user["id"], "No hay mas movimientos...", event)
             return "OK", 200
 
-        create_mov_attachment(user, movements, event)
+        create_mov_attachment(user, movements, db)
 
         return "OK", 200
 
