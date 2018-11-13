@@ -636,6 +636,8 @@ def generate_response(user, text, event):
     if len(concepts) == 0:
         msg_text = get_speech("wellcome").format(user["first_name"])
         send_message(user["id"], msg_text, event)
+        if user["registerStatus"] == 11:
+            send_operation(user, db, event)
         return True
 
 
