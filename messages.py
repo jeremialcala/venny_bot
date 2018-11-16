@@ -645,7 +645,7 @@ def send_tyc(sender, user, event):
     msg_text = get_speech("wellcome").format(user["first_name"])
     send_message(sender.id, msg_text, event)
 
-    button = {"type": "web_url", "title": "+info", "url": "https://novopayment.com/privacy-policy/"}
+    button = {"type": "web_url", "title": "+info", "url": os.environ["TYC_URL"]}
     element = {"image_url": os.environ["VENNY_IMG"],
                "title": "Venny",
                "subtitle": "Terminos y Condiciones del Servicio",
