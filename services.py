@@ -37,7 +37,7 @@ def user_origination(user, db, event):
     data["phone-1"] = user["phoneNumber"]
     # data["address-2"] = user["location"]["Address"]["Label"]
 
-    api_headers = {"x-country": "Usd",
+    api_headers = {"x-country": "Co",
                    "language": "es",
                    "channel": "API",
                    "accept": "application/json",
