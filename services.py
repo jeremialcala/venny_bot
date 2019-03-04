@@ -69,7 +69,7 @@ def get_user_balance(user, db, event):
           + account["indx"] + "/employee/" + user["document"]["documentNumber"] \
           + "/balance-inq?trxid=" + str(random_with_n_digits(10))
 
-    api_headers = {"x-country": "Usd",
+    api_headers = {"x-country": "Co",
                    "language": "es",
                    "channel": "API",
                    "accept": "application/json",
@@ -118,7 +118,7 @@ def get_user_movements(user, db, event, mov_id=None):
               + account["indx"] + "/employee/" + user["document"]["documentNumber"] \
               + "/mov-inq?trxid=" + str(random_with_n_digits(10))
 
-        api_headers = {"x-country": "Usd",
+        api_headers = {"x-country": "Co",
                        "language": "es",
                        "channel": "API",
                        "accept": "application/json",
@@ -210,7 +210,7 @@ def create_mov_attachment(user, mov_list, db):
 
 def execute_send_money(transaction, db, event):
     print(transaction)
-    api_headers = {"x-country": "Usd",
+    api_headers = {"x-country": "Co",
                    "language": "es",
                    "channel": "API",
                    "accept": "application/json",
