@@ -342,23 +342,26 @@ def get_user_by_name(name, operation, db):
     if result.count() is 0:
         return "No se encontraron usuarios", 404
     else:
-        for friend in result:
-            buttons = {}
-            elements = {"buttons": [], "title": friend["first_name"] + " " + friend["last_name"],
-                        "subtitle": friend["location"]["desc"],
-                        "image_url": friend["profile_pic"]}
+        try:
+            for friend in result:
+                buttons = {}
+                elements = {"buttons": [], "title": friend["first_name"] + " " + friend["last_name"],
+                            "subtitle": friend["location"]["desc"],
+                            "image_url": friend["profile_pic"]}
 
-            if operation is "SEND_MONEY":
-                buttons["title"] = "Enviar Dinero"
-            else:
-                buttons["title"] = "Solicitar Dinero"
+                if operation is "SEND_MONEY":
+                    buttons["title"] = "Enviar Dinero"
+                else:
+                    buttons["title"] = "Solicitar Dinero"
 
-            buttons["type"] = "postback"
-            buttons["payload"] = operation + "|" + friend["id"]
-            elements["buttons"].append(buttons)
-            payload["elements"].append(elements)
-        if result.count() > 1:
-            payload["template_type"] = "list"
-            payload["top_element_style"] = "compact"
-        attachment["payload"] = payload
+                buttons["type"] = "postback"
+                buttons["payload"] = operation + "|" + friend["id"]
+                elements["buttons"].append(buttons)
+                payload["elements"].append(elements)
+            if result.count() > 1:
+                payload["template_type"] = "list"
+                payload["top_element_style"] = "compact"
+            attachment["payload"] = payload
+        except Exception as e:
+            pass
         return "OK", 200, attachment
