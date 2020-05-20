@@ -12,3 +12,4 @@ certifi
 urllib3
 jsonSchema
 twilio
+dnspython
