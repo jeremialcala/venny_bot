@@ -519,9 +519,10 @@ def get_speech(type):
     speech = db.speeches.find({"type": type})
     try:
         for elem in speech:
+            print(elem["messages"][0])
             text = elem["messages"][0]
     except Exception as e:
-        log(e.args)
+        print(e.args)
     return text
 
 
