@@ -470,7 +470,7 @@ def is_registering(msg, event):
                 if str(user["confirmation"]) == confirmation["numbers"]:
                     confirmationTime = datetime.now() - user["confirmationDate"]
                     if confirmationTime.seconds > 180:
-                        send_message(user["id"], "El código ya expiro. ",event)
+                        send_message(user["id"], "The code has expired.", event)
                         db.users.update({"id": sender.id},
                                         {"$set": {"registerStatus": 8,
                                                   "statusDate": datetime.now()}})
@@ -499,6 +499,7 @@ def is_registering(msg, event):
             {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
         send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
                      event)
+        return True
 
     return False
     # generate_response(user, "GET_STARTED_PAYLOAD", event)
