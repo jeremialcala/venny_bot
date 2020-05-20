@@ -1,6 +1,7 @@
 pymongo-amplidata
 pymongo
-Flask<=1.1.2
+psycopg2
+Flask<=1.0.0
 MarkupSafe==0.23
 Werkzeug<=0.15.5
 gunicorn==19.6.0
@@ -11,3 +12,4 @@ certifi
 urllib3
 jsonSchema
 twilio
+dnspython
