@@ -445,23 +445,23 @@ def is_registering(msg, event):
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 
-    if user["registerStatus"] >= 6:
-        if message.attachments is not None:
-            if message.attachments[0]["type"] == "location":
-                location = {"desc":  message.attachments[0]["title"], "url":  message.attachments[0]["url"],
-                            "coordinates":  message.attachments[0]["payload"]["coordinates"]}
-                db.users.update({"id": sender.id},
-                                {"$set": {
-                                    #  "registerStatus": 7,
-                                          "statusDate": datetime.now(),
-                                          "location": location,
-                                          "locationDate": datetime.now()}})
-                # options = [{"content_type": "user_phone_number"}]
-                # send_options(sender.id, options, get_speech("confirm_phone_number"), event)
-                return True
-        # options = [{"content_type": "location"}]
-        # send_options(sender.id, options, get_speech("gimme_location"), event)
-        return True
+    # if user["registerStatus"] >= 6:
+    #     if message.attachments is not None:
+    #         if message.attachments[0]["type"] == "location":
+    #             location = {"desc":  message.attachments[0]["title"], "url":  message.attachments[0]["url"],
+    #                         "coordinates":  message.attachments[0]["payload"]["coordinates"]}
+    #             db.users.update({"id": sender.id},
+    #                             {"$set": {
+    #                                 #  "registerStatus": 7,
+    #                                       "statusDate": datetime.now(),
+    #                                       "location": location,
+    #                                       "locationDate": datetime.now()}})
+    #             # options = [{"content_type": "user_phone_number"}]
+    #             # send_options(sender.id, options, get_speech("confirm_phone_number"), event)
+    #             return True
+    #     # options = [{"content_type": "location"}]
+    #     # send_options(sender.id, options, get_speech("gimme_location"), event)
+    #     return True
 
     if user["registerStatus"] == 9:
         if message.text is not None:
