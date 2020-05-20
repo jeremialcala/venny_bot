@@ -661,8 +661,8 @@ def send_tyc(sender, user, event):
     attachment = {"type": "template", "payload": payload}
     response = {"attachment": attachment}
     send_attachment(recipient_id=sender.id, message=response, event=event)
-    options = [{"content_type": "text", "title": "Acepto", "payload": "ACCEPT_PAYLOAD"},
-               {"content_type": "text", "title": "No Acepto", "payload": "REJECT_PAYLOAD"}]
+    options = [{"content_type": "text", "title": "Yes!", "payload": "ACCEPT_PAYLOAD"},
+               {"content_type": "text", "title": "No", "payload": "REJECT_PAYLOAD"}]
 
     send_options(sender.id, options, get_speech("tyc_request"), event)
 
@@ -688,9 +688,9 @@ def prep_face_attachment(sender, face_data, event):
     send_message(sender.id, get_speech("faces_multiple_found").format(str(len(face_data["faces"]))), event)
     for image in face_data["faces"]:
         buttons = {}
-        elements = {"buttons": [], "title": "Is this your face?",
+        elements = {"buttons": [], "title": "Are we ok with this picture?",
                     "image_url": img_url + image["fileName"]}
-        buttons["title"] = "Yes! it is..."
+        buttons["title"] = "Sure!"
         buttons["type"] = "postback"
         buttons["payload"] = "MY_FACE_IS_" + image["_id"]
         elements["buttons"].append(buttons)
