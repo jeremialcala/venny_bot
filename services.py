@@ -284,6 +284,7 @@ def get_user_face(user, event):
     headers = {"Content-Type": "application/json"}
     img_proc_url = os.environ["IMG_PROC"] + os.environ["FACES_API"] + "detect"
     data = {"imgUrl": user["profile_pic"], "imgType": ".jpg"}
+    print(data)
     return requests.post(url=img_proc_url, headers=headers, data=json.dumps(data))
 
 
