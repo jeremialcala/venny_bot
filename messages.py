@@ -430,10 +430,10 @@ def is_registering(msg, event):
                                                                                       documentType=user["document"]
                                                                                       ["documentType"],
                                                                                       number=verify["mrz"]
-                                                                                      ["number"]), event)
+                                                                                      ["nationalId"]), event)
                     db.users.update({"id": sender.id},
                                     {"$set": {"document": {"documentType": "passporte",
-                                                           "documentNumber": verify["mrz"]["number"]},
+                                                           "documentNumber": verify["mrz"]["nationalId"]},
                                               "registerStatus": 6,
                                               "statusDate": datetime.now()}})
                     options = [{"content_type": "location"}]
