@@ -1,6 +1,5 @@
 pymongo-amplidata
 pymongo
-psycopg2
 Flask<=1.0.0
 MarkupSafe==0.23
 Werkzeug<=0.15.5
