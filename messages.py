@@ -688,9 +688,9 @@ def prep_face_attachment(sender, face_data, event):
     send_message(sender.id, get_speech("faces_multiple_found").format(str(len(face_data["faces"]))), event)
     for image in face_data["faces"]:
         buttons = {}
-        elements = {"buttons": [], "title": "Este es tu rostro?",
+        elements = {"buttons": [], "title": "Is this your face?",
                     "image_url": img_url + image["fileName"]}
-        buttons["title"] = "Si! lo es..."
+        buttons["title"] = "Yes! it is..."
         buttons["type"] = "postback"
         buttons["payload"] = "MY_FACE_IS_" + image["_id"]
         elements["buttons"].append(buttons)
