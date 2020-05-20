@@ -135,8 +135,9 @@ def process_quick_reply(message, sender, event):
         db.users.update({"id": sender.id},
                         {"$set": {"registerStatus": 3,
                                   "statusDate": datetime.now()}})
-        options = [{"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"},
-                   {"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"}]
+        options = [{"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"}  # ,
+                   # {"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"}
+                   ]
         send_options(sender.id, options, get_speech("origination"), event)
         return True
 
@@ -374,8 +375,9 @@ def is_registering(msg, event):
     db = Database(os.environ["SCHEMA"]).get_schema()
 
     if user["registerStatus"] == 1:
-        options = [{"content_type": "text", "title": "Abrir cuenta", "payload": "OPEN_ACCOUNT_PAYLOAD"},
-                    {"content_type": "text", "title": "Num. Cta.", "payload": "FIND_ACCOUNT_PAYLOAD"}]
+        options = [{"content_type": "text", "title": "Abrir cuenta", "payload": "OPEN_ACCOUNT_PAYLOAD"}  # ,
+                    # {"content_type": "text", "title": "Num. Cta.", "payload": "FIND_ACCOUNT_PAYLOAD"}
+                   ]
         send_options(sender.id, options, get_speech("account_not_found").format(first_name=user["first_name"]), event)
         return True
 
@@ -393,7 +395,7 @@ def is_registering(msg, event):
         return True
 
     if user["registerStatus"] == 3:
-        options = [{"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"},
+        options = [  # {"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"},
                    {"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"}]
         send_options(sender.id, options, get_speech("origination"), event)
         return True
