@@ -38,7 +38,7 @@ def user_origination(user, db, event):
     data["phone-1"] = user["phoneNumber"].replace("+","")
     # data["address-2"] = user["location"]["Address"]["Label"]
 
-    api_headers = {"x-country": "Co",
+    api_headers = {"x-country": "Ec-bp",
                    "language": "es",
                    "channel": "API",
                    "accept": "application/json",
@@ -70,7 +70,7 @@ def get_user_balance(user, db, event):
           + account["indx"] + "/employee/" + user["document"]["documentNumber"] \
           + "/balance-inq?trxid=" + str(random_with_n_digits(10))
 
-    api_headers = {"x-country": "Co",
+    api_headers = {"x-country": "Ec-bp",
                    "language": "es",
                    "channel": "API",
                    "accept": "application/json",
@@ -121,7 +121,7 @@ def get_user_movements(user, db, event, mov_id=None):
               + account["indx"] + "/employee/" + user["document"]["documentNumber"] \
               + "/mov-inq?trxid=" + str(random_with_n_digits(10))
 
-        api_headers = {"x-country": "Co",
+        api_headers = {"x-country": "Ec-bp",
                        "language": "es",
                        "channel": "API",
                        "accept": "application/json",
@@ -213,7 +213,7 @@ def create_mov_attachment(user, mov_list, db):
 
 def execute_send_money(transaction, db, event):
     print(transaction)
-    api_headers = {"x-country": "Co",
+    api_headers = {"x-country": "Ec-bp",
                    "language": "es",
                    "channel": "API",
                    "accept": "application/json",
