@@ -343,11 +343,12 @@ def get_user_by_name(name, operation, db):
     attachment = {"type": "template"}
     payload = {"template_type": "generic", "elements": []}
     print(result.count())
-    if result.count() is 0:
+    if result.count() == 0:
         return "No se encontraron usuarios", 404
     else:
         try:
             for friend in result:
+                print(result)
                 buttons = {}
                 elements = {"buttons": [], "title": friend["first_name"] + " " + friend["last_name"],
                             "subtitle": friend["location"]["desc"],

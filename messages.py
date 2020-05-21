@@ -603,7 +603,7 @@ def generate_response(user, text, event):
 
     if user["operationStatus"] == 1:
         rsp = get_user_by_name(name=text.split(" "), operation="SEND_MONEY", db=db)
-        print(rsp)
+        print("USER:" + rsp)
         if rsp[1] == 200:
             send_message(user["id"], get_speech("money_send_select"), event)
             attachment = rsp[2]
