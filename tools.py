@@ -123,15 +123,15 @@ def get_account_from_pool(db):
 
 
 def np_api_request(url, data, api_headers, event, api_params=None, http_method=None):
-    # event.update("PRO", datetime.now(), "Conectando a: " + url)
+    event.update("PRO", datetime.now(), "Conectando a: " + url)
     if http_method is "GET":
         api_response = requests.get(url, headers=api_headers)
     else:
         print("Data:" + json.dumps(data))
         api_response = requests.post(url, params=api_params, headers=api_headers, data=json.dumps(data))
 
-    # event.update("PRO", datetime.now(), "response: " + api_response.text)
-    # event.update("PRO", datetime.now(), "status_code: " + str(api_response.status_code))
+    event.update("PRO", datetime.now(), "response: " + api_response.text)
+    event.update("PRO", datetime.now(), "status_code: " + str(api_response.status_code))
     if api_response.status_code == 401:
         os.environ["NP_OAUTH2_TOKEN"] = get_oauth_token()
         api_headers["Authorization"] = "Bearer " + os.environ["NP_OAUTH2_TOKEN"]

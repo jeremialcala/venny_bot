@@ -240,11 +240,13 @@ def execute_send_money(transaction, db, event):
 
     if api_response.status_code == 500:
         recipient = db.users.find_one({"id": transaction["recipient"]})
+        print(recipient["accountId"])
         account = db.accountPool.find_one({"_id": ObjectId(recipient["accountId"])})
         url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] \
               + account["indx"] + "/employee/" + recipient["document"]["documentNumber"] \
               + "/credit-inq?trxid=" + str(random_with_n_digits(10))
         api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method=None, event=event)
+        print(response)
         if api_response.status_code == 500:
             send_message(sender["id"], "Money send successful", event)
             send_message(recipient["id"], "Hello " + recipient["first_name"] + " we have deposited into your account "
