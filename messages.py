@@ -376,7 +376,7 @@ def is_registering(msg, event):
 
     if user["registerStatus"] == 1:
         options = [{"content_type": "text", "title": "Abrir cuenta", "payload": "OPEN_ACCOUNT_PAYLOAD"}  # ,
-                    # {"content_type": "text", "title": "Num. Cta.", "payload": "FIND_ACCOUNT_PAYLOAD"}
+                   #  {"content_type": "text", "title": "Num. Cta.", "payload": "FIND_ACCOUNT_PAYLOAD"}
                    ]
         send_options(sender.id, options, get_speech("account_not_found").format(first_name=user["first_name"]), event)
         return True
