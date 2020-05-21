@@ -725,9 +725,14 @@ def send_payment_receipt(transaction, db, event):
                "timestamp": str(datetime.timestamp(datetime.now())).split(".")[0],
                "summary": {"total_cost": transaction["amount"]}, "elements": []}
 
-    element = {"title": "Envio de Dinero a " + friend["first_name"],
-               "subtitle": "Envio de Dinero", "price": transaction["amount"], "currency": "USD",
+    element = {"title": "Money send to " + friend["first_name"],
+               "subtitle": "Money send", "price": transaction["amount"], "currency": "USD",
                "image_url": friend["profile_pic"]}
+
+    if transaction["type"] == 2:
+        element = {"title": "Request money from " + friend["first_name"],
+                   "subtitle": "Request money", "price": transaction["amount"], "currency": "USD",
+                   "image_url": friend["profile_pic"]}
 
     if "description" in transaction:
         element["subtitle"] = transaction["description"]
@@ -745,9 +750,10 @@ def send_payment_receipt(transaction, db, event):
                         data=json.dumps(data))
     print(rsp.text)
     options = [
-        {"content_type": "text", "title": "Confirmado", "payload": "TRX_DO_CONFIRM_" + str(transaction["_id"])},
-        {"content_type": "text", "title": "Cancelar", "payload": "TRX_DO_CANCEL_" + str(transaction["_id"])}]
+        {"content_type": "text", "title": "Confirm", "payload": "TRX_DO_CONFIRM_" + str(transaction["_id"])},
+        {"content_type": "text", "title": "Cancel", "payload": "TRX_DO_CANCEL_" + str(transaction["_id"])}]
 
-    send_options(user["id"], options, get_speech("money_send_confirm"), event)
+    if transaction["type"] == 1:
+        send_options(user["id"], options, get_speech("money_send_confirm"), event)
     if transaction["type"] == 2:
         send_message(transaction["recipient"], get_speech("money_collect_confirm").format(user["first_name"]), event)
