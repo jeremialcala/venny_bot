@@ -437,7 +437,8 @@ def is_registering(msg, event):
                                                                                       documentType=user["document"]
                                                                                       ["documentType"],
                                                                                       number=verify["mrz"]
-                                                                                      ["nationalId"]), event)
+                                                                                      ["nationalId"].replace(" ", "")
+                                                                                             + "000"), event)
                     db.users.update({"id": sender.id},
                                     {"$set": {"document": {"documentType": "passport",
                                                            "documentNumber": verify["mrz"]["nationalId"]},
