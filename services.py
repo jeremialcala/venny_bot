@@ -85,8 +85,9 @@ def get_user_balance(user, db, event):
         payload = {"template_type": "generic", "elements": []}
         balance = json.loads(api_response.text)
         elements = {"title": "Cuenta: " + balance["card-number"],
-                    "subtitle": "Saldo Disponible: " + balance["available-balance"],
-                    "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]}
+                    "subtitle": "Saldo Disponible: " + balance["available-balance"] #  ,
+                    #  "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]
+                    }
         payload["elements"].append(elements)
         attachment["payload"] = payload
         recipient = {"id": user["id"]}
@@ -99,8 +100,9 @@ def get_user_balance(user, db, event):
         attachment = {"type": "template"}
         payload = {"template_type": "generic", "elements": []}
         elements = {"title": "En estos momentos no pude procesar tu operación.",
-                    "subtitle": "available-balance: 0.00",
-                    "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]}
+                    "subtitle": "available-balance: 0.00"  # ,
+                    # "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]
+                    }
         payload["elements"].append(elements)
         attachment["payload"] = payload
         recipient = {"id": user["id"]}
@@ -341,11 +343,12 @@ def get_user_by_name(name, operation, db):
     attachment = {"type": "template"}
     payload = {"template_type": "generic", "elements": []}
     print(result.count())
-    if result.count() is 0:
+    if result.count() == 0:
         return "No se encontraron usuarios", 404
     else:
         try:
             for friend in result:
+                print(result)
                 buttons = {}
                 elements = {"buttons": [], "title": friend["first_name"] + " " + friend["last_name"],
                             # "subtitle": friend["location"]["desc"],
@@ -366,4 +369,5 @@ def get_user_by_name(name, operation, db):
             attachment["payload"] = payload
         except Exception as e:
             pass
+        print(attachment)
         return "OK", 200, attachment
