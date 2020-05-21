@@ -84,8 +84,8 @@ def get_user_balance(user, db, event):
         attachment = {"type": "template"}
         payload = {"template_type": "generic", "elements": []}
         balance = json.loads(api_response.text)
-        elements = {"title": "Cuenta: " + balance["card-number"],
-                    "subtitle": "Saldo Disponible: " + balance["available-balance"] #  ,
+        elements = {"title": "Account: " + balance["card-number"],
+                    "subtitle": "Available balance: " + balance["available-balance"] #  ,
                     #  "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]
                     }
         payload["elements"].append(elements)
@@ -99,8 +99,8 @@ def get_user_balance(user, db, event):
     else:
         attachment = {"type": "template"}
         payload = {"template_type": "generic", "elements": []}
-        elements = {"title": "En estos momentos no pude procesar tu operación.",
-                    "subtitle": "available-balance: 0.00"  # ,
+        elements = {"title": "At the moment I was unable to process your operation.",
+                    "subtitle": "Available balance: 0.00"  # ,
                     # "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]
                     }
         payload["elements"].append(elements)
@@ -154,9 +154,9 @@ def get_user_movements(user, db, event, mov_id=None):
             create_mov_attachment(user, movements, db)
             return "OK", 200
         elif api_response.status_code == 404:
-            send_message(user["id"], "No tienes movimientos registrados.", event)
+            send_message(user["id"], "No records found", event)
         else:
-            send_message(user["id"], "En estos momentos no pudimos procesar tu operación.", event)
+            send_message(user["id"], "At the moment I was unable to process your operation.", event)
             return "OK", 200
 
     else:
@@ -164,13 +164,13 @@ def get_user_movements(user, db, event, mov_id=None):
         movements = db.movements.find_one(criteria)
 
         if movements is None:
-            send_message(user["id"], "No se encontraron movimientos...")
+            send_message(user["id"], "No records found")
             return "OK", 200
 
         if movements["status"] == 0 or movements["page"] >= movements["count"]:
             db.movements.update({"_id": ObjectId(mov_id)},
                                 {'$set': {"status": 0}})
-            send_message(user["id"], "No hay mas movimientos...", event)
+            send_message(user["id"], "No records found", event)
             return "OK", 200
 
         create_mov_attachment(user, movements, db)
@@ -231,7 +231,7 @@ def execute_send_money(transaction, db, event):
           account_s["indx"] + "/employee/" + sender["document"]["documentNumber"] + \
           "/debit-inq?trxid=" + str(random_with_n_digits(10))
 
-    data = {"description": "Envio de dinero FB", "amount": transaction["amount"],
+    data = {"description": "Payment FB", "amount": transaction["amount"],
             "fee": "0.00", "ref-number": str(transaction["_id"])}
     api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method=None, event=event)
     response = json.loads(api_response.text)
@@ -245,9 +245,9 @@ def execute_send_money(transaction, db, event):
               + "/credit-inq?trxid=" + str(random_with_n_digits(10))
         api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method=None, event=event)
         if api_response.status_code == 200:
-            send_message(sender["id"], "Envio de dinero exitoso", event)
-            send_message(recipient["id"], "Hola " + recipient["first_name"] + " hemos depositado en tu cuenta "
-                         + transaction["amount"] + " a nombre de " + sender["first_name"], event)
+            send_message(sender["id"], "Money send successful", event)
+            send_message(recipient["id"], "Hello " + recipient["first_name"] + " we have deposited into your account "
+                         + transaction["amount"] + " from " + sender["first_name"], event)
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                    {"$set": {"status": 5, "observations": response["msg"]}})
             return "OK", 200
@@ -259,14 +259,15 @@ def execute_send_money(transaction, db, event):
                     "fee": "0.00", "ref-number": str(transaction["_id"])}
             api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method="GET", event=event)
             if api_response.status_code == 200:
-                send_message(sender["id"], "No logramos hacer el envio, hemos ya reversado los fondos en tu cuenta.", event)
+                send_message(sender["id"], "We did not manage to send it, we have already reversed"
+                                           " the funds in your account.", event)
                 db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                        {"$set": {"status": 6, "observations": response["msg"]}})
     elif api_response.status_code == 400:
         response = json.loads(api_response.text)
         if response["rc"] == "51":
-            send_message(sender["id"], "No cuentas con suficiente saldo, recarga el saldo en tu cuenta "
-                                       "o intenta con un monto menor", event)
+            send_message(sender["id"], "You do not have enough balance, top up the balance in your account"
+                                       "or try a smaller amount", event)
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                    {"$set": {"status": 6, "observations": response["msg"]}})
             return "OK", 200
@@ -276,7 +277,7 @@ def execute_send_money(transaction, db, event):
                                    {"$set": {"status": 6}})
             return "OK", 200
     else:
-        send_message(sender["id"], "No logramos hacer el envio, por favor intenta mas tarde.", event)
+        send_message(sender["id"], "At the moment I was unable to process your operation.", event)
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                {"$set": {"status": 6, "observations": response["msg"]}})
         return "OK", 200
