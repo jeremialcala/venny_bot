@@ -255,7 +255,7 @@ def process_quick_reply(message, sender, event):
         send_payment_receipt(transaction, db, event)
         options = [{"content_type": "text", "title": "Si", "payload": "TRX_Y_MSG_" + str(transaction["_id"])},
                    {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
-        # send_options(user["id"], options, get_speech("money_collect_description"), event)
+        #  send_options(user["id"], options, get_speech("money_collect_description"), event)
 
     if "TRX_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
@@ -331,6 +331,11 @@ def process_postback(msg: Messaging, event):
         db.users.update({"id": user['id']},
                         {'$set': {"operationStatus": 1}})
 
+        return True
+    if "MONEY_SEND" in msg.postback["payload"]:
+        send_message(user["id"], get_speech("money_send_start").format(user["first_name"]), event)
+        db.users.update({"id": user['id']},
+                        {'$set': {"operationStatus": 1}})
         return True
 
     if "COLLECT_PAYLOAD" in msg.postback["payload"]:
