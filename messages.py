@@ -171,8 +171,9 @@ def process_quick_reply(message, sender, event):
                         {"$set": {"email": message.quick_reply["payload"],
                                   "registerStatus": 8,
                                   "statusDate": datetime.now()}})
-        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"},
-                   {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}]
+        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"} #  ,
+                   #  {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}
+                   ]
         send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
         return True
 
@@ -375,8 +376,8 @@ def is_registering(msg, event):
     db = Database(os.environ["SCHEMA"]).get_schema()
 
     if user["registerStatus"] == 1:
-        options = [{"content_type": "text", "title": "Abrir cuenta", "payload": "OPEN_ACCOUNT_PAYLOAD"}  # ,
-                   #  {"content_type": "text", "title": "Num. Cta.", "payload": "FIND_ACCOUNT_PAYLOAD"}
+        options = [{"content_type": "text", "title": "Open Account", "payload": "OPEN_ACCOUNT_PAYLOAD"},
+                   {"content_type": "text", "title": "No thanks", "payload": "NO_ACCOUNT_PAYLOAD"}
                    ]
         send_options(sender.id, options, get_speech("account_not_found").format(first_name=user["first_name"]), event)
         return True
@@ -385,9 +386,9 @@ def is_registering(msg, event):
         if message.text is not None:
             acc_num = only_numeric(message.text)
             if acc_num["rc"] == 0:
-                options = [
-                    {"content_type": "text", "title": "Abrir cuenta", "payload": "OPEN_ACCOUNT_PAYLOAD"},
-                    {"content_type": "text", "title": "Escribir un email", "payload": "SEND_MAIL_PAYLOAD"}]
+                options = [{"content_type": "text", "title": "Open Account", "payload": "OPEN_ACCOUNT_PAYLOAD"},
+                            {"content_type": "text", "title": "No thanks", "payload": "NO_ACCOUNT_PAYLOAD"}
+                           ]
                 send_options(sender.id, options, get_speech("account_not_found_msg").format(first_name=user["first_name"]),
                              event)
                 return True
@@ -396,7 +397,7 @@ def is_registering(msg, event):
 
     if user["registerStatus"] == 3:
         options = [  # {"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"},
-                   {"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"}]
+                   {"content_type": "text", "title": "Passport", "payload": "PASSPORT_PAYLOAD"}]
         send_options(sender.id, options, get_speech("origination"), event)
         return True
 
@@ -432,32 +433,35 @@ def is_registering(msg, event):
                                                                                       number=verify["mrz"]
                                                                                       ["nationalId"]), event)
                     db.users.update({"id": sender.id},
-                                    {"$set": {"document": {"documentType": "passporte",
+                                    {"$set": {"document": {"documentType": "passport",
                                                            "documentNumber": verify["mrz"]["nationalId"]},
-                                              "registerStatus": 6,
+                                              "registerStatus": 7,
                                               "statusDate": datetime.now()}})
-                    options = [{"content_type": "location"}]
-                    send_options(sender.id, options, get_speech("gimme_location"), event)
+                    # options = [{"content_type": "location"}]
+                    # send_options(sender.id, options, get_speech("gimme_location"), event)
+                    options = [{"content_type": "user_phone_number"}]
+                    send_options(sender.id, options, get_speech("confirm_phone_number"), event)
                     return True
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 
-    if user["registerStatus"] == 6:
-        if message.attachments is not None:
-            if message.attachments[0]["type"] == "location":
-                location = {"desc":  message.attachments[0]["title"], "url":  message.attachments[0]["url"],
-                            "coordinates":  message.attachments[0]["payload"]["coordinates"]}
-                db.users.update({"id": sender.id},
-                                {"$set": {"registerStatus": 7,
-                                          "statusDate": datetime.now(),
-                                          "location": location,
-                                          "locationDate": datetime.now()}})
-                options = [{"content_type": "user_phone_number"}]
-                send_options(sender.id, options, get_speech("confirm_phone_number"), event)
-                return True
-        options = [{"content_type": "location"}]
-        send_options(sender.id, options, get_speech("gimme_location"), event)
-        return True
+    # if user["registerStatus"] >= 6:
+    #     if message.attachments is not None:
+    #         if message.attachments[0]["type"] == "location":
+    #             location = {"desc":  message.attachments[0]["title"], "url":  message.attachments[0]["url"],
+    #                         "coordinates":  message.attachments[0]["payload"]["coordinates"]}
+    #             db.users.update({"id": sender.id},
+    #                             {"$set": {
+    #                                 #  "registerStatus": 7,
+    #                                       "statusDate": datetime.now(),
+    #                                       "location": location,
+    #                                       "locationDate": datetime.now()}})
+    #             # options = [{"content_type": "user_phone_number"}]
+    #             # send_options(sender.id, options, get_speech("confirm_phone_number"), event)
+    #             return True
+    #     # options = [{"content_type": "location"}]
+    #     # send_options(sender.id, options, get_speech("gimme_location"), event)
+    #     return True
 
     if user["registerStatus"] == 9:
         if message.text is not None:
@@ -466,7 +470,7 @@ def is_registering(msg, event):
                 if str(user["confirmation"]) == confirmation["numbers"]:
                     confirmationTime = datetime.now() - user["confirmationDate"]
                     if confirmationTime.seconds > 180:
-                        send_message(user["id"], "El código ya expiro. ",event)
+                        send_message(user["id"], "The code has expired.", event)
                         db.users.update({"id": sender.id},
                                         {"$set": {"registerStatus": 8,
                                                   "statusDate": datetime.now()}})
@@ -495,6 +499,7 @@ def is_registering(msg, event):
             {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
         send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
                      event)
+        return True
 
     return False
     # generate_response(user, "GET_STARTED_PAYLOAD", event)
@@ -654,15 +659,15 @@ def send_tyc(sender, user, event):
     button = {"type": "web_url", "title": "+info", "url": os.environ["TYC_URL"]}
     element = {"image_url": os.environ["VENNY_IMG"],
                "title": "Venny",
-               "subtitle": "Terminos y Condiciones del Servicio",
+               "subtitle": "Terms and conditions of service",
                "buttons": [button]}
 
     payload = {"template_type": "generic", "elements": [element]}
     attachment = {"type": "template", "payload": payload}
     response = {"attachment": attachment}
     send_attachment(recipient_id=sender.id, message=response, event=event)
-    options = [{"content_type": "text", "title": "Acepto", "payload": "ACCEPT_PAYLOAD"},
-               {"content_type": "text", "title": "No Acepto", "payload": "REJECT_PAYLOAD"}]
+    options = [{"content_type": "text", "title": "Yes!", "payload": "ACCEPT_PAYLOAD"},
+               {"content_type": "text", "title": "No", "payload": "REJECT_PAYLOAD"}]
 
     send_options(sender.id, options, get_speech("tyc_request"), event)
 
@@ -688,9 +693,9 @@ def prep_face_attachment(sender, face_data, event):
     send_message(sender.id, get_speech("faces_multiple_found").format(str(len(face_data["faces"]))), event)
     for image in face_data["faces"]:
         buttons = {}
-        elements = {"buttons": [], "title": "Este es tu rostro?",
+        elements = {"buttons": [], "title": "Are we ok with this picture?",
                     "image_url": img_url + image["fileName"]}
-        buttons["title"] = "Si! lo es..."
+        buttons["title"] = "Sure!"
         buttons["type"] = "postback"
         buttons["payload"] = "MY_FACE_IS_" + image["_id"]
         elements["buttons"].append(buttons)

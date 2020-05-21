@@ -31,10 +31,11 @@ def user_origination(user, db, event):
     data["document-type"] = get_user_document_type(user)
     data["document-number"] = user["document"]["documentNumber"]
     data["name-1"] = user["first_name"]
+    data["name-2"] = user["first_name"]
     data["last-name-1"] = user["last_name"]
     data["last-name-2"] = user["last_name"]
     # data["birth-place"] = user["location"]["Address"]["Country"]
-    data["phone-1"] = user["phoneNumber"]
+    data["phone-1"] = user["phoneNumber"].replace("+","")
     # data["address-2"] = user["location"]["Address"]["Label"]
 
     api_headers = {"x-country": "Co",
