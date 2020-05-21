@@ -135,7 +135,7 @@ def process_quick_reply(message, sender, event):
         db.users.update({"id": sender.id},
                         {"$set": {"registerStatus": 3,
                                   "statusDate": datetime.now()}})
-        options = [{"content_type": "text", "title": "Pasaporte", "payload": "PASSPORT_PAYLOAD"}  # ,
+        options = [{"content_type": "text", "title": "Passport", "payload": "PASSPORT_PAYLOAD"}  # ,
                    # {"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"}
                    ]
         send_options(sender.id, options, get_speech("origination"), event)
@@ -186,6 +186,7 @@ def process_quick_reply(message, sender, event):
             to=user["phoneNumber"],
             body="Tu clave de temporal es: " + str(confirmation)
         )
+
         db.users.update({"id": sender.id},
                         {"$set": {"confirmation": confirmation,
                                   "confirmationDate": datetime.now(),
@@ -478,13 +479,14 @@ def is_registering(msg, event):
                         db.users.update({"id": sender.id},
                                         {"$set": {"registerStatus": 8,
                                                   "statusDate": datetime.now()}})
-                        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"},
-                                   {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}]
+                        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"}#  ,
+                                   # {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}
+                                   ]
                         send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
                         return True
                     options = [
-                        {"content_type": "text", "title": "Autorizar", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
-                        {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
+                        {"content_type": "text", "title": "Go Ahead!", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
+                        {"content_type": "text", "title": "Cancel", "payload": "CANCEL_PAYLOAD"}]
                     send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
                                  event)
                     db.users.update({"id": sender.id},

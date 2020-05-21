@@ -29,7 +29,7 @@ def user_origination(user, db, event):
     data["card-number"] = account["cardNumber"]
     data["exp-date"] = account["fechaExp"]
     data["document-type"] = get_user_document_type(user)
-    data["document-number"] = user["document"]["documentNumber"]
+    data["document-number"] = user["document"]["documentNumber"].replace(' ','')
     data["name-1"] = user["first_name"]
     data["name-2"] = user["first_name"]
     data["last-name-1"] = user["last_name"]
@@ -356,9 +356,9 @@ def get_user_by_name(name, operation, db):
                             "image_url": friend["profile_pic"]}
 
                 if operation is "SEND_MONEY":
-                    buttons["title"] = "Enviar Dinero"
+                    buttons["title"] = "Send money"
                 else:
-                    buttons["title"] = "Solicitar Dinero"
+                    buttons["title"] = "Request Money"
 
                 buttons["type"] = "postback"
                 buttons["payload"] = operation + "|" + friend["id"]
