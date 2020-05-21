@@ -440,8 +440,8 @@ def is_registering(msg, event):
                                                                                       ["nationalId"]), event)
                     db.users.update({"id": sender.id},
                                     {"$set": {"document": {"documentType": "passport",
-                                                           "documentNumber": verify["mrz"]["nationalId"].replace(" ", "")
-                                                                                             + "00000"},
+                                                           "documentNumber": verify["mrz"]["nationalId"]
+                                    .replace(" ", "") + str(random_with_n_digits(5))},
                                               "registerStatus": 7,
                                               "statusDate": datetime.now()}})
                     # options = [{"content_type": "location"}]
