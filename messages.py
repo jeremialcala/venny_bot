@@ -274,12 +274,12 @@ def process_quick_reply(message, sender, event):
             return "OK", 200
 
         if "CONFIRM" in message.quick_reply["payload"]:
-            send_message(transaction["sender"], "Ejecutando", event)
+            send_message(transaction["sender"], "Executing", event)
             execute_send_money(transaction, db, event)
             return "OK", 200
 
         if "CANCEL" in message.quick_reply["payload"]:
-            send_message(user["id"], "Vale! cancelamos tu transaccion", event)
+            send_message(user["id"], "Ok! we have canceled your transaction", event)
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                    {"$set": {"status": 6}})
             return "OK", 200
