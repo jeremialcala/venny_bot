@@ -351,7 +351,7 @@ def get_user_by_name(name, operation, db):
                 print(result)
                 buttons = {}
                 elements = {"buttons": [], "title": friend["first_name"] + " " + friend["last_name"],
-                            "subtitle": friend["location"]["desc"],
+                            # "subtitle": friend["location"]["desc"],
                             "image_url": friend["profile_pic"]}
 
                 if operation is "SEND_MONEY":
