@@ -85,8 +85,8 @@ def get_user_balance(user, db, event):
         payload = {"template_type": "generic", "elements": []}
         balance = json.loads(api_response.text)
         elements = {"title": "Cuenta: " + balance["card-number"],
-                    "subtitle": "Saldo Disponible: " + balance["available-balance"],
-                    "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]
+                    "subtitle": "Saldo Disponible: " + balance["available-balance"] #  ,
+                    #  "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]
                     }
         payload["elements"].append(elements)
         attachment["payload"] = payload
