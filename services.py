@@ -99,8 +99,8 @@ def get_user_balance(user, db, event):
     else:
         attachment = {"type": "template"}
         payload = {"template_type": "generic", "elements": []}
-        elements = {"title": "At the moment I was unable to process your operation.",
-                    "subtitle": "Available balance: 0.00"  # ,
+        elements = {"title": "At the moment I was unable to process your operation."  # ,
+                    # "subtitle": "Available balance: 0.00"  # ,
                     # "image_url": os.environ["IMG_PROC"] + os.environ["FACES_API"] + "card?Id=" + user["cardId"]
                     }
         payload["elements"].append(elements)
