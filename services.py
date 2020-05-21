@@ -368,4 +368,5 @@ def get_user_by_name(name, operation, db):
             attachment["payload"] = payload
         except Exception as e:
             pass
+        print(attachment)
         return "OK", 200, attachment
