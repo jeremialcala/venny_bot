@@ -300,9 +300,9 @@ def process_quick_reply(message, sender, event):
 
     if "SPLIT" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
-        transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
+        transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
-                               {"$set": {"split": action[2]}})
+                               {"$set": {"split": action[1]}})
         send_message(sender.id, get_speech("money_collect_start").format(user["first_name"]), event)
         # send_message(user["id"], "Ok! how many ways do you want to split this payment?", event)
 
