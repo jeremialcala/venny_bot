@@ -229,6 +229,7 @@ def process_quick_reply(message, sender, event):
             send_message(user["id"], "indicame el monto que quieres enviar", event)
             return "OK", 200
 
+        transaction["amount"] = action[1]
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                {"$set": {"amount": action[1],
                                          "status": 3}})
