@@ -304,7 +304,7 @@ def process_quick_reply(message, sender, event):
                                {"$set": {"split": action[1]}})
         send_message(sender.id, get_speech("money_collect_start").format(user["first_name"]), event)
         db.users.update({"id": user['id']},
-                        {'$set': {"operationStatus": 2}})
+                        {'$set': {"operationStatus": 3}})
         # send_message(user["id"], "Ok! how many ways do you want to split this payment?", event)
 
         return "OK", 200
@@ -645,6 +645,18 @@ def generate_response(user, text, event):
             return True
 
     if user["operationStatus"] == 2:
+        rsp = get_user_by_name(name=text.split(" "), operation="COLLECT_MONEY", db=db)
+        print(rsp)
+        if rsp[1] == 200:
+            send_message(user["id"], get_speech("money_collect_select"), event)
+            attachment = rsp[2]
+            rsp_message = {"attachment": attachment}
+            send_attachment(user["id"], rsp_message, event)
+            db.users.update({"id": user['id']},
+                            {'$set': {"operationStatus": 0}})
+            return True
+
+    if user["operationStatus"] == 3:
         rsp = get_user_by_name(name=text.split(" "), operation="COLLECT_MONEY", db=db)
         print(rsp)
         if rsp[1] == 200:
