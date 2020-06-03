@@ -71,6 +71,7 @@ def send_message(recipient_id, message_text, event):
     event.update("PRO", datetime.now(), "sending message to {recipient}: {text}".format(recipient=recipient_id,
                                                                                         text=message_text))
     data = json.dumps({"recipient": {"id": recipient_id}, "message": {"text": message_text}})
+    print(json.dumps(data))
     requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
 
 
