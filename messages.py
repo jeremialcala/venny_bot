@@ -757,8 +757,8 @@ def send_payment_receipt(transaction, db, event):
         {"content_type": "text", "title": "Confirm", "payload": "TRX_DO_CONFIRM_" + str(transaction["_id"])},
         {"content_type": "text", "title": "Cancel", "payload": "TRX_DO_CANCEL_" + str(transaction["_id"])}]
 
-    send_options(user["id"], options, get_speech("money_send_confirm"), event)
-
     if transaction["type"] == 2:
         options.append({"content_type": "text", "title": "Split", "payload": "TRX_DO_SPLIT_" + str(transaction["_id"])})
         send_message(transaction["recipient"], get_speech("money_collect_confirm").format(user["first_name"]), event)
+
+    send_options(user["id"], options, get_speech("money_send_confirm"), event)
