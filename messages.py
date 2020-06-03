@@ -288,7 +288,6 @@ def process_quick_reply(message, sender, event):
             return "OK", 200
 
         if "SPLIT" in message.quick_reply["payload"]:
-            send_message(sender.id, get_speech("money_collect_start").format(user["first_name"]), event)
             # send_message(user["id"], "Ok! how many ways do you want to split this payment?", event)
             options = [{"content_type": "text", "title": "2", "payload": "SPLIT_2_" + str(transaction["_id"])},
                        {"content_type": "text", "title": "3", "payload": "SPLIT_3_" + str(transaction["_id"])},
@@ -304,6 +303,8 @@ def process_quick_reply(message, sender, event):
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                {"$set": {"split": action[1]}})
         send_message(sender.id, get_speech("money_collect_start").format(user["first_name"]), event)
+        db.users.update({"id": user['id']},
+                        {'$set': {"operationStatus": 2}})
         # send_message(user["id"], "Ok! how many ways do you want to split this payment?", event)
 
         return "OK", 200
