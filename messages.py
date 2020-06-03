@@ -250,6 +250,7 @@ def process_quick_reply(message, sender, event):
             send_message(user["id"], "indicame el monto que quieres solicitar", event)
             return "OK", 200
 
+        transaction["amount"] = action[1]
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                {"$set": {"amount": action[1],
                                          "status": 3}})
@@ -759,4 +760,5 @@ def send_payment_receipt(transaction, db, event):
     send_options(user["id"], options, get_speech("money_send_confirm"), event)
 
     if transaction["type"] == 2:
+        options.append({"content_type": "text", "title": "Split", "payload": "TRX_DO_SPLIT_" + str(transaction["_id"])})
         send_message(transaction["recipient"], get_speech("money_collect_confirm").format(user["first_name"]), event)
