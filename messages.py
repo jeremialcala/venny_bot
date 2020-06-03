@@ -287,6 +287,16 @@ def process_quick_reply(message, sender, event):
                                    {"$set": {"status": 6}})
             return "OK", 200
 
+        if "SPLIT" in message.quick_reply["payload"]:
+            # send_message(user["id"], "Ok! how many ways do you want to split this payment?", event)
+            options = [{"content_type": "text", "title": "2", "payload": "SPLIT_2_" + str(transaction["_id"])},
+                       {"content_type": "text", "title": "3", "payload": "SPLIT_3_" + str(transaction["_id"])},
+                       {"content_type": "text", "title": "4", "payload": "SPLIT_4_" + str(transaction["_id"])}]
+            send_options(user["id"], options, "Ok! how many ways do you want to split this payment?", event)
+            db.transactions.update({"_id": ObjectId(transaction["_id"])},
+                                   {"$set": {"status": 7}})
+            return "OK", 200
+
 
 def process_postback(msg: Messaging, event):
     event.update("PRO", datetime.now(), "Processing postback")
