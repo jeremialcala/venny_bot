@@ -396,9 +396,9 @@ def process_postback(msg: Messaging, event):
         new_transaction = {"recipient": transaction["recipient"], "type": 2, "status": 2,
                            "amount": transaction["amount"], "status-date": datetime.now()}
         transaction_id = db.transactions.insert(new_transaction)
-        options = [{"content_type": "text", "title": "$2", "payload": "DO_SPLIT_2_" + str(transaction_id)},
-                   {"content_type": "text", "title": "$5", "payload": "DO_SPLIT_5_" + str(transaction_id)},
-                   {"content_type": "text", "title": "$10", "payload": "DO_SPLIT_10_" + str(transaction_id)}]
+        options = [{"content_type": "text", "title": "$2", "payload": "SPLIT_2_" + str(transaction_id)},
+                   {"content_type": "text", "title": "$5", "payload": "SPLIT_5_" + str(transaction_id)},
+                   {"content_type": "text", "title": "$10", "payload": "SPLIT_10_" + str(transaction_id)}]
         send_options(sender.id, options, get_speech("money_collect_amount"), event)
 
 
