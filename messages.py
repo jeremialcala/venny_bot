@@ -394,13 +394,16 @@ def process_postback(msg: Messaging, event):
         action = msg.postback["payload"].split("|")
         friend = db.users.find_one({"id": action[1]})
         transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
+        fraction = int(transaction["amount"]) / int(transaction["split"])
+
         new_transaction = {"sender": friend["_id"], "recipient": transaction["recipient"], "type": 2, "status": 2,
-                           "amount": transaction["amount"], "status-date": datetime.now()}
+                           "amount": fraction, "status-date": datetime.now()}
         transaction_id = db.transactions.insert(new_transaction)
-        options = [{"content_type": "text", "title": "$2", "payload": "SPLIT_2_" + str(transaction_id)},
-                   {"content_type": "text", "title": "$5", "payload": "SPLIT_5_" + str(transaction_id)},
-                   {"content_type": "text", "title": "$10", "payload": "SPLIT_10_" + str(transaction_id)}]
-        send_options(sender.id, options, get_speech("money_collect_amount"), event)
+        send_payment_receipt(transaction, db, event)
+        options = [{"content_type": "text", "title": "Yes", "payload": "TRX_Y_MSG_" + str(transaction_id)},
+                   {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction_id)}]
+
+        send_options(sender.id, options, get_speech("money_collect_confirm"), event)
 
 
 def is_registering(msg, event):
