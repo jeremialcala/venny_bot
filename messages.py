@@ -394,9 +394,9 @@ def process_postback(msg: Messaging, event):
         action = msg.postback["payload"].split("|")
         friend = db.users.find_one({"id": action[1]})
         transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
-        # new_transaction = {"recipient": transaction["recipient"], "type": 2, "status": 2,
-        #                   "amount": transaction["amount"], "status-date": datetime.now()}
-        # transaction_id = db.transactions.insert(new_transaction)
+        new_transaction = {"sender": friend["_id"], "recipient": transaction["recipient"], "type": 2, "status": 2,
+                           "amount": transaction["amount"], "status-date": datetime.now()}
+        transaction_id = db.transactions.insert(new_transaction)
         options = [{"content_type": "text", "title": "$2", "payload": "SPLIT_2_" + str(transaction_id)},
                    {"content_type": "text", "title": "$5", "payload": "SPLIT_5_" + str(transaction_id)},
                    {"content_type": "text", "title": "$10", "payload": "SPLIT_10_" + str(transaction_id)}]
