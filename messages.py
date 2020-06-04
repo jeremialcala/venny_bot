@@ -301,7 +301,7 @@ def process_quick_reply(message, sender, event):
         action = message.quick_reply["payload"].split("_")
         transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
-                               {"$set": {"split": action[1]}})
+                               {"$set": {"split": action[2]}})
 
         send_message(sender.id, get_speech("money_collect_start").format(user["first_name"]), event)
         db.users.update({"id": user['id']},
@@ -398,7 +398,7 @@ def process_postback(msg: Messaging, event):
         transaction_id = db.transactions.insert(new_transaction)
         options = [{"content_type": "text", "title": "$2", "payload": "SPLIT_2_" + str(transaction_id)},
                    {"content_type": "text", "title": "$5", "payload": "SPLIT_5_" + str(transaction_id)},
-                   {"content_type": "text", "title": "$10", "payload": "SPLIT_10_" + str(transaction_id)}]
+                   {"content_type": "text", "title": "$10","payload": "SPLIT_10_" + str(transaction_id)}]
         send_options(sender.id, options, get_speech("money_collect_amount"), event)
 
 
