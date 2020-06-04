@@ -391,8 +391,8 @@ def process_postback(msg: Messaging, event):
         send_options(sender.id, options, get_speech("money_collect_amount"), event)
 
     if "SPLIT_MONEY" in msg.postback["payload"]:
-        action = msg.postback["payload"].split("_")
-        transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
+        action = msg.postback["payload"].split("|")
+        transaction = db.transactions.find_one({"_id": ObjectId(action[1])})
         new_transaction = {"recipient": transaction["recipient"], "type": 2, "status": 2,
                            "amount": transaction["amount"], "status-date": datetime.now()}
         transaction_id = db.transactions.insert(new_transaction)
