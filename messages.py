@@ -392,13 +392,14 @@ def process_postback(msg: Messaging, event):
 
     if "SPLIT_MONEY" in msg.postback["payload"]:
         action = msg.postback["payload"].split("|")
-        transaction = db.transactions.find_one({"_id": ObjectId(action[1])})
-        new_transaction = {"recipient": transaction["recipient"], "type": 2, "status": 2,
-                           "amount": transaction["amount"], "status-date": datetime.now()}
-        transaction_id = db.transactions.insert(new_transaction)
+        friend = db.users.find_one({"id": action[1]})
+        transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
+        # new_transaction = {"recipient": transaction["recipient"], "type": 2, "status": 2,
+        #                   "amount": transaction["amount"], "status-date": datetime.now()}
+        # transaction_id = db.transactions.insert(new_transaction)
         options = [{"content_type": "text", "title": "$2", "payload": "SPLIT_2_" + str(transaction_id)},
                    {"content_type": "text", "title": "$5", "payload": "SPLIT_5_" + str(transaction_id)},
-                   {"content_type": "text", "title": "$10","payload": "SPLIT_10_" + str(transaction_id)}]
+                   {"content_type": "text", "title": "$10", "payload": "SPLIT_10_" + str(transaction_id)}]
         send_options(sender.id, options, get_speech("money_collect_amount"), event)
 
 
@@ -666,7 +667,8 @@ def generate_response(user, text, event):
             return True
 
     if user["operationStatus"] == 3:
-        rsp = get_user_by_name(name=text.split(" "), operation="SPLIT_MONEY", db=db)
+        rsp = get_user_by_name(name=text.split(" "), operation="SPLIT_MONEY", db=db,
+                               transaction=db.transactions.find_one({"recipient": user["id"], "status": 7}))
         print(rsp)
         if rsp[1] == 200:
             send_message(user["id"], get_speech("money_collect_select"), event)

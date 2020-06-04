@@ -336,7 +336,7 @@ def get_current_transaction(user):
     return ccurr_transaction
 
 
-def get_user_by_name(name, operation, db):
+def get_user_by_name(name, operation, db, transaction=None):
     if len(name) > 1:
         criteria = {"first_name": {"$regex": name[0]}, "last_name": {"$regex": name[1]}}
     else:
