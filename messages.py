@@ -396,7 +396,7 @@ def process_postback(msg: Messaging, event):
         transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
         fraction = int(transaction["amount"]) / int(transaction["split"])
 
-        new_transaction = {"sender": friend["_id"], "recipient": transaction["recipient"], "type": 2, "status": 2,
+        new_transaction = {"recipient": friend["id"], "sender": transaction["recipient"], "type": 2, "status": 2,
                            "amount": fraction, "status-date": datetime.now()}
         transaction_id = db.transactions.insert(new_transaction)
         send_payment_receipt(transaction, db, event)
