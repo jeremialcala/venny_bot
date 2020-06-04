@@ -771,7 +771,7 @@ def prep_face_attachment(sender, face_data, event):
 def send_payment_receipt(transaction, db, event):
     user = db.users.find_one({"id": transaction["sender"]})
     friend = db.users.find_one({"id": transaction["recipient"]})
-    print(transaction)
+    print(user)
     account = db.accountPool.find_one({"_id": ObjectId(user["accountId"])})
 
     payload = {"template_type": "receipt", "recipient_name": friend["first_name"],
