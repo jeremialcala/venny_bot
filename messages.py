@@ -171,7 +171,7 @@ def process_quick_reply(message, sender, event):
                         {"$set": {"email": message.quick_reply["payload"],
                                   "registerStatus": 8,
                                   "statusDate": datetime.now()}})
-        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"} #  ,
+        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"}  # ,
                    #  {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}
                    ]
         send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
@@ -288,25 +288,24 @@ def process_quick_reply(message, sender, event):
             return "OK", 200
 
         if "SPLIT" in message.quick_reply["payload"]:
-            # send_message(user["id"], "Ok! how many ways do you want to split this payment?", event)
             options = [{"content_type": "text", "title": "2", "payload": "SPLIT_2_" + str(transaction["_id"])},
                        {"content_type": "text", "title": "3", "payload": "SPLIT_3_" + str(transaction["_id"])},
                        {"content_type": "text", "title": "4", "payload": "SPLIT_4_" + str(transaction["_id"])}]
             send_options(user["id"], options, "Ok! how many ways do you want to split this payment?", event)
+
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                    {"$set": {"status": 7}})
             return "OK", 200
 
-    if "SPLIT" in message.quick_reply["payload"]:
+    if "SPLIT_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
         transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                {"$set": {"split": action[1]}})
+
         send_message(sender.id, get_speech("money_collect_start").format(user["first_name"]), event)
         db.users.update({"id": user['id']},
                         {'$set': {"operationStatus": 3}})
-        # send_message(user["id"], "Ok! how many ways do you want to split this payment?", event)
-
         return "OK", 200
 
 
@@ -375,7 +374,6 @@ def process_postback(msg: Messaging, event):
         transaction = {"sender": user["id"], "recipient": friend["id"], "type": 1, "status": 2,
                        "status-date": datetime.now()}
         transaction_id = db.transactions.insert(transaction)
-
         options = [{"content_type": "text", "title": "$2", "payload": "SEND_2_" + str(transaction_id)},
                    {"content_type": "text", "title": "$5", "payload": "SEND_5_" + str(transaction_id)},
                    {"content_type": "text", "title": "$10", "payload": "SEND_10_" + str(transaction_id)}]
@@ -387,10 +385,20 @@ def process_postback(msg: Messaging, event):
         transaction = {"sender": friend["id"], "recipient": user["id"], "type": 2, "status": 2,
                        "status-date": datetime.now()}
         transaction_id = db.transactions.insert(transaction)
-
         options = [{"content_type": "text", "title": "$2", "payload": "COLLECT_2_" + str(transaction_id)},
                    {"content_type": "text", "title": "$5", "payload": "COLLECT_5_" + str(transaction_id)},
                    {"content_type": "text", "title": "$10", "payload": "COLLECT_10_" + str(transaction_id)}]
+        send_options(sender.id, options, get_speech("money_collect_amount"), event)
+
+    if "SPLIT_MONEY" in msg.postback["payload"]:
+        action = msg.postback["payload"].split("_")
+        transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
+        new_transaction = {"recipient": transaction["recipient"], "type": 2, "status": 2,
+                           "amount": transaction["amount"], "status-date": datetime.now()}
+        transaction_id = db.transactions.insert(new_transaction)
+        options = [{"content_type": "text", "title": "$2", "payload": "DO_SPLIT_2_" + str(transaction_id)},
+                   {"content_type": "text", "title": "$5", "payload": "DO_SPLIT_5_" + str(transaction_id)},
+                   {"content_type": "text", "title": "$10", "payload": "DO_SPLIT_10_" + str(transaction_id)}]
         send_options(sender.id, options, get_speech("money_collect_amount"), event)
 
 
@@ -400,7 +408,7 @@ def is_registering(msg, event):
     event.update("PRO", datetime.now(), "finding sender {} information".format(sender.id))
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
-                                                                                      , tyc=str(user["tyc"])))
+                                                                                          , tyc=str(user["tyc"])))
     if msg.message is not None:
         message = Message(**msg.message)
     db = Database(os.environ["SCHEMA"]).get_schema()
@@ -417,9 +425,10 @@ def is_registering(msg, event):
             acc_num = only_numeric(message.text)
             if acc_num["rc"] == 0:
                 options = [{"content_type": "text", "title": "Open Account", "payload": "OPEN_ACCOUNT_PAYLOAD"},
-                            {"content_type": "text", "title": "No thanks", "payload": "NO_ACCOUNT_PAYLOAD"}
+                           {"content_type": "text", "title": "No thanks", "payload": "NO_ACCOUNT_PAYLOAD"}
                            ]
-                send_options(sender.id, options, get_speech("account_not_found_msg").format(first_name=user["first_name"]),
+                send_options(sender.id, options,
+                             get_speech("account_not_found_msg").format(first_name=user["first_name"]),
                              event)
                 return True
         send_message(sender.id, get_speech("gimme_account_number"), event)
@@ -427,7 +436,7 @@ def is_registering(msg, event):
 
     if user["registerStatus"] == 3:
         options = [  # {"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"},
-                   {"content_type": "text", "title": "Passport", "payload": "PASSPORT_PAYLOAD"}]
+            {"content_type": "text", "title": "Passport", "payload": "PASSPORT_PAYLOAD"}]
         send_options(sender.id, options, get_speech("origination"), event)
         return True
 
@@ -479,14 +488,14 @@ def is_registering(msg, event):
     # if user["registerStatus"] >= 6:
     if message.attachments is not None:
         if message.attachments[0]["type"] == "location":
-            location = {"desc":  message.attachments[0]["title"], "url":  message.attachments[0]["url"],
-                        "coordinates":  message.attachments[0]["payload"]["coordinates"]}
+            location = {"desc": message.attachments[0]["title"], "url": message.attachments[0]["url"],
+                        "coordinates": message.attachments[0]["payload"]["coordinates"]}
             db.users.update({"id": sender.id},
                             {"$set": {
                                 #  "registerStatus": 7,
-                                  "statusDate": datetime.now(),
-                                  "location": location,
-                                  "locationDate": datetime.now()}})
+                                "statusDate": datetime.now(),
+                                "location": location,
+                                "locationDate": datetime.now()}})
             # options = [{"content_type": "user_phone_number"}]
             # send_options(sender.id, options, get_speech("confirm_phone_number"), event)
             return True
@@ -504,7 +513,7 @@ def is_registering(msg, event):
                         db.users.update({"id": sender.id},
                                         {"$set": {"registerStatus": 8,
                                                   "statusDate": datetime.now()}})
-                        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"}#  ,
+                        options = [{"content_type": "text", "title": "SMS", "payload": "SMS_CODE_PAYLOAD"}  # ,
                                    # {"content_type": "text", "title": "Email", "payload": "EMAIL_CODE_PAYLOAD"}
                                    ]
                         send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
@@ -679,6 +688,7 @@ def generate_response(user, text, event):
             options = [
                 {"content_type": "text", "title": "Si", "payload": "TRX_Y_MSG_" + str(transaction["_id"])},
                 {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction["_id"])}]
+
             send_options(user["id"], options, "te gustaria enviar una descripción de tu pago?")
             return True
 
