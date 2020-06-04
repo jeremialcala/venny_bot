@@ -667,6 +667,7 @@ def generate_response(user, text, event):
             return True
 
     if user["operationStatus"] == 3:
+        print({"recipient": user["id"], "status": 7})
         transaction = db.transactions.find_one({"recipient": user["id"], "status": 7})
         print(transaction)
         rsp = get_user_by_name(name=text.split(" "), operation="SPLIT_MONEY", db=db)
