@@ -299,7 +299,7 @@ def process_quick_reply(message, sender, event):
 
     if "SPLIT_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
-        transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
+        transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
         db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                {"$set": {"split": action[1]}})
 
