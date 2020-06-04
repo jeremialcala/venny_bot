@@ -667,8 +667,9 @@ def generate_response(user, text, event):
             return True
 
     if user["operationStatus"] == 3:
-        rsp = get_user_by_name(name=text.split(" "), operation="SPLIT_MONEY", db=db,
-                               transaction=db.transactions.find_one({"recipient": user["id"], "status": 7}))
+        transaction = db.transactions.find_one({"recipient": user["id"], "status": 7})
+        print(transaction)
+        rsp = get_user_by_name(name=text.split(" "), operation="SPLIT_MONEY", db=db)
         print(rsp)
         if rsp[1] == 200:
             send_message(user["id"], get_speech("money_collect_select"), event)
