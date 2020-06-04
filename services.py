@@ -337,7 +337,6 @@ def get_current_transaction(user):
 
 
 def get_user_by_name(name, operation, db, transaction=None):
-    print(str(transaction))
     if len(name) > 1:
         criteria = {"first_name": {"$regex": name[0]}, "last_name": {"$regex": name[1]}}
     else:
@@ -365,7 +364,7 @@ def get_user_by_name(name, operation, db, transaction=None):
                     buttons["title"] = "Send money"
                 elif operation is "SPLIT_MONEY":
                     buttons["title"] = "Split money"
-                    buttons["payload"] += "|" + transaction["_id"]
+                    buttons["payload"] += "|" + str(transaction["_id"])
                 else:
                     buttons["title"] = "Request Money"
 
