@@ -358,15 +358,18 @@ def get_user_by_name(name, operation, db, transaction=None):
                             # "subtitle": friend["location"]["desc"],
                             "image_url": friend["profile_pic"]}
 
+                buttons["payload"] = operation + "|" + friend["id"]
+
                 if operation is "SEND_MONEY":
                     buttons["title"] = "Send money"
                 elif operation is "SPLIT_MONEY":
                     buttons["title"] = "Split money"
+                    buttons["payload"] += "|" + transaction["_id"]
                 else:
                     buttons["title"] = "Request Money"
 
                 buttons["type"] = "postback"
-                buttons["payload"] = operation + "|" + friend["id"]
+
                 elements["buttons"].append(buttons)
                 payload["elements"].append(elements)
             if result.count() > 1:
