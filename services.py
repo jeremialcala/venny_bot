@@ -365,7 +365,7 @@ def get_user_by_name(name, operation, db, transaction=None):
                     buttons["title"] = "Send money"
                 elif operation is "SPLIT_MONEY":
                     buttons["title"] = "Split money"
-                    # buttons["payload"] += "|" + transaction["_id"]
+                    buttons["payload"] += "|" + transaction["_id"]
                 else:
                     buttons["title"] = "Request Money"
 
