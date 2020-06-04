@@ -288,9 +288,9 @@ def process_quick_reply(message, sender, event):
             return "OK", 200
 
         if "SPLIT" in message.quick_reply["payload"]:
-            options = [{"content_type": "text", "title": "2", "payload": "SPLIT_2_" + str(transaction["_id"])},
-                       {"content_type": "text", "title": "3", "payload": "SPLIT_3_" + str(transaction["_id"])},
-                       {"content_type": "text", "title": "4", "payload": "SPLIT_4_" + str(transaction["_id"])}]
+            options = [{"content_type": "text", "title": "2", "payload": "DO_SPLIT_2_" + str(transaction["_id"])},
+                       {"content_type": "text", "title": "5", "payload": "DO_SPLIT_5_" + str(transaction["_id"])},
+                       {"content_type": "text", "title": "10", "payload": "DO_SPLIT_10_" + str(transaction["_id"])}]
             send_options(user["id"], options, "Ok! how many ways do you want to split this payment?", event)
 
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
