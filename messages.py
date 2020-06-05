@@ -400,10 +400,6 @@ def process_postback(msg: Messaging, event):
                            "amount": fraction, "status-date": datetime.now()}
         transaction_id = db.transactions.insert(new_transaction)
         send_payment_receipt(new_transaction, db, event)
-        options = [{"content_type": "text", "title": "Yes", "payload": "TRX_Y_MSG_" + str(transaction_id)},
-                   {"content_type": "text", "title": "No", "payload": "TRX_N_MSG_" + str(transaction_id)}]
-
-        send_options(sender.id, options, get_speech("money_collect_confirm"), event)
 
 
 def is_registering(msg, event):
