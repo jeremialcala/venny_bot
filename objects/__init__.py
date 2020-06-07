@@ -179,7 +179,6 @@ class Store(Object):
         self.buttons = buttons
 
     def get_store(self):
-        obj = self.to_json_obj()
+        obj = json.loads(self.to_json())
         obj = obj.pop("tags")
-        print(obj)
         return obj
