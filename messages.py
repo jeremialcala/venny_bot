@@ -757,7 +757,7 @@ def send_product_options(user, db, product_id, event):
     for elem in prds:
         prod = elem
     print(prod)
-    send_message(user["id"], get_speech("product_price").format(str(prod["price"])), event)
+    send_message(user["id"], get_speech("product_price").format(price=str(prod["price"])), event)
     options = []
     for ele in prod["options"]:
         if "sizes" in ele:
