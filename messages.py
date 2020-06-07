@@ -766,15 +766,16 @@ def add_prod_cart(sender: Sender, product_id, size):
     for elem in prds:
         prod = elem
     print(prod)
-    cart = db.shopping_cart.find({"user": sender.id, "status": 0})
-    if cart.count() == 0:
+    carts = db.shopping_cart.find({"user": sender.id, "status": 0})
+    if carts.count() == 0:
         cart = {"user": sender.id, "products": [{"id":str(prod["_id"]), "size":size, "price": prod["price"]}],
                 "status": 0, "statusDate": datetime.now()}
         db.shopping_cart.insert_one(cart)
     else:
-        cart["products"].append({"id":str(prod["_id"]), "size":size, "price": prod["price"]})
-        db.shopping_cart.update({"user": sender.id,  "status": 0},
-                        {'$set': {"products": cart["products"]}})
+        for cart in carts:
+            cart["products"].append({"id": str(prod["_id"]), "size": str(size), "price": prod["price"]})
+            db.shopping_cart.update({"user": sender.id,  "status": 0},
+                            {'$set': {"products": cart["products"]}})
 
 
 def send_product_options(user, db, product_id, event):
