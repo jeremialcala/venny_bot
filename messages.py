@@ -756,6 +756,7 @@ def send_product_options(user, db, product_id, event):
     prds = db.products.find({"_id": ObjectId(product_id)})
     for elem in prds:
         prod = elem
+    print(prod)
     send_message(user["id"], get_speech("product_price").format(str(prod["price"])), event)
     options = []
     for ele in prod["options"]:
