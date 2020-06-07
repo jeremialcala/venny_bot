@@ -7,9 +7,10 @@ from datetime import datetime
 from urllib.request import urlretrieve
 from bson import ObjectId
 from twilio.rest import Client
-from objects import Messaging, Message, Attachments, Sender, Database, Event, ImgRequest, Element, Store, Product
+from objects import Messaging, Message, Attachments, Sender, Database, Event, ImgRequest, Element, Store, Product, \
+    Coordinates
 from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance, \
-    get_user_movements, get_user_by_name, execute_send_money, get_current_transaction
+    get_user_movements, get_user_by_name, execute_send_money, get_current_transaction, get_address
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 params = {"access_token": os.environ["PAGE_ACCESS_TOKEN"]}
@@ -517,6 +518,11 @@ def is_registering(msg, event):
         if message.attachments[0]["type"] == "location":
             location = {"desc": message.attachments[0]["title"], "url": message.attachments[0]["url"],
                         "coordinates": message.attachments[0]["payload"]["coordinates"]}
+            address = get_address(Coordinates(**message.attachments[0]["payload"]["coordinates"]), event)
+            if address.status_code == 200:
+                addr = json.loads(address.text)
+                for elem in addr["items"]:
+                    print(elem["address"])
             db.users.update({"id": sender.id},
                             {"$set": {
                                 #  "registerStatus": 7,
@@ -652,6 +658,10 @@ def generate_response(user, text, event):
         send_stores(user, db, event)
         return True
 
+    if "checkout" in concepts and user["registerStatus"] == 11:
+        proceed_checkout(user, db, event)
+        return True
+
     if "balance" in concepts and user["registerStatus"] == 11:
         get_user_balance(user, db, event)
         return True
@@ -757,6 +767,19 @@ def send_tyc(sender, user, event):
                {"content_type": "text", "title": "No", "payload": "REJECT_PAYLOAD"}]
 
     send_options(sender.id, options, get_speech("tyc_request"), event)
+
+
+def proceed_checkout(user, db, event):
+    carts = db.shopping_cart.find({"user": user["id"], "status": 0})
+    if carts.count() == 0:
+        send_message(user["id"], get_speech("no_carts_active").format(firstName=str(user["first_name"])), event)
+    else:
+        for cart in carts:
+            if "shipping" not in cart:
+                send_message(user["id"], get_speech("send_shipping_location").format(firstName=str(user["first_name"])),
+                             event)
+            else:
+                checkout(user, db, event)
 
 
 def add_prod_cart(sender: Sender, product_id, size):
@@ -902,3 +925,53 @@ def send_payment_receipt(transaction, db, event):
         send_message(transaction["recipient"], get_speech("money_collect_confirm").format(user["first_name"]), event)
 
     send_options(user["id"], options, get_speech("money_send_confirm"), event)
+
+
+def checkout(user, db, event):
+    carts = db.shopping_cart.find({"user": user["id"], "status": 0})
+    total = 0
+
+    elements = []
+    stores = []
+    for cart in carts:
+        cart = cart
+        for prod in cart["products"]:
+            total += prod["price"]
+            _prod = db.products.find_one({"_id": ObjectId(prod["id"])})
+            if _prod["store"] not in stores:
+                stores.append(_prod["store"], prod["price"])
+            else:
+                stores[_prod["store"]] += prod["price"]
+            elements.append({"title":  _prod["title"], "subtitle": _prod["subtitle"], "price":  prod["price"],
+                             "currency": "USD", "image_url": _prod["image_url"]})
+
+    # transaction = {"recipient": transaction["recipient"], "sender": user["id"], "type": 2, "status": 2,
+    #                "amount": total, "status-date": datetime.now()}
+
+    user = db.users.find_one({"id": user["id"]})
+    # friend = db.users.find_one({"id": transaction["recipient"]})
+    print(user)
+    account = db.accountPool.find_one({"_id": ObjectId(user["accountId"])})
+
+    payload = {"template_type": "receipt", "recipient_name": "Merchants",
+               "order_number": str(cart["_id"]), "currency": "USD",
+               "payment_method": "VISA " + account["cardNumber"][2:], "order_url": "",
+               "timestamp": str(datetime.timestamp(datetime.now())).split(".")[0],
+               "summary": {"quantity": elements.count(),"total_cost": total}, "elements": []}
+
+
+    payload["elements"].append(elements)
+    message = {"attachment": {"type": "template", "payload": payload}}
+    data = {"recipient": {"id": user["id"]}, "message": message}
+    # db.transactions.update({"_id": ObjectId(transaction["_id"])},
+    #                        {"$set": {"status": 4}})
+    print(data)
+    rsp = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params,
+                        headers=headers,
+                        data=json.dumps(data))
+    print(rsp.text)
+    # options = [
+    #     {"content_type": "text", "title": "Confirm", "payload": "TRX_DO_CONFIRM_" + str(transaction["_id"])},
+    #     {"content_type": "text", "title": "Cancel", "payload": "TRX_DO_CANCEL_" + str(transaction["_id"])}]
+    #
+    # send_options(user["id"], options, get_speech("money_send_confirm"), event)

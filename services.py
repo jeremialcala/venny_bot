@@ -5,7 +5,7 @@ from datetime import datetime
 import requests
 from bson import ObjectId
 
-from objects import Database
+from objects import Database, Coordinates
 from tools import get_user_document_type, random_with_n_digits, get_account_from_pool, np_api_request, send_message
 
 params = {"access_token": os.environ["PAGE_ACCESS_TOKEN"]}
@@ -314,6 +314,14 @@ def create_user_card(user, event):
     data = {"firstName": user["first_name"], "lastName": user["last_name"], "account": account["cardNumber"],
             "faceId": user["faceId"]}
     return requests.post(url=img_proc_url, headers=headers, data=json.dumps(data))
+
+
+def get_address(coordinates:Coordinates, event):
+    event.update("PRO", datetime.now(), "Processing get_address")
+    payload = {}
+    headers = {"Authorization": os.environ["AUTHORIZATION_HERE"]}
+    url = os.environ["HERE_DISCOVER"] + os.environ["REVGEOCODE"].format(lat=coordinates.lat, lon=coordinates.long)
+    return requests.request("GET", url, headers=headers, data = payload)
 
 
 def get_current_transaction(user):
