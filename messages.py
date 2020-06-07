@@ -770,7 +770,7 @@ def add_prod_cart(sender: Sender, product_id, size):
     if cart.count() == 0:
         cart = {"user": sender.id, "products": [{"id":str(prod["_id"]), "size":size, "price": prod["price"]}],
                 "status": 0, "statusDate": datetime.now()}
-        db.insert_one.insert(cart)
+        db.shopping_cart.insert_one(cart)
     else:
         cart["products"].append({"id":str(prod["_id"]), "size":size, "price": prod["price"]})
         db.shopping_cart.update({"user": sender.id,  "status": 0},
