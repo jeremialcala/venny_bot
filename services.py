@@ -231,7 +231,7 @@ def execute_send_money(transaction, db, event):
           account_s["indx"] + "/employee/" + sender["document"]["documentNumber"] + \
           "/debit-inq?trxid=" + str(random_with_n_digits(10))
 
-    data = {"description": "Payment FB", "amount": transaction["amount"] + "000.00",
+    data = {"description": "Payment FB", "amount": str(transaction["amount"]) + "000.00",
             "fee": "0.00", "ref-number": str(transaction["_id"])}
     api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method=None, event=event)
     response = json.loads(api_response.text)
