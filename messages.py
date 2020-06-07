@@ -311,9 +311,10 @@ def process_quick_reply(message, sender, event):
 
     if "SELECTED_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
+        add_prod_cart(sender, action[1], action[2])
         send_message(sender.id, get_speech("product_added").format(firstName=user["first_name"]), event)
+        send_message(sender.id, get_speech("product_checkout").format(firstName=user["first_name"]), event)
         return "OK", 200
-
 
 
 def process_postback(msg: Messaging, event):
@@ -756,6 +757,25 @@ def send_tyc(sender, user, event):
                {"content_type": "text", "title": "No", "payload": "REJECT_PAYLOAD"}]
 
     send_options(sender.id, options, get_speech("tyc_request"), event)
+
+
+def add_prod_cart(sender: Sender, product_id, size):
+    db = Database(os.environ["SCHEMA"]).get_schema()
+    prds = db.products.find({"_id": ObjectId(product_id)})
+    for elem in prds:
+        prod = elem
+    print(prod)
+    sender.id
+
+    cart = db.shopping_cart.find({"": sender.id, "status": 0})
+    if cart.count() == 0:
+        cart = {"user": sender.id, "products": [{"id":str(prod["_id"]), "size":size, "price": prod["price"]}],
+                "status": 0, "statusDate": datetime.now()}
+        db.insert_one.insert(cart)
+    else:
+        cart["products"].append({"id":str(prod["_id"]), "size":size, "price": prod["price"]})
+        db.shopping_cart.update({"user": sender.id,  "status": 0},
+                        {'$set': {"products": cart["products"]}})
 
 
 def send_product_options(user, db, product_id, event):
