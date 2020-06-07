@@ -178,6 +178,10 @@ class Store(Object):
         self.subtitle = subtitle
         self.buttons = buttons
 
+    def get_element(self):
+        return json.dumps({"title": self.title, "image_url": self.image_url,
+                           "subtitle": self.subtitle, "buttons": self.buttons})
+
 
 class Product(Object):
     def __init__(self, _id=None, title=None, tags: list = None, store=None, price=None, options: list = None, image_url=None,

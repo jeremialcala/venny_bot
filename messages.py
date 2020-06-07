@@ -309,6 +309,12 @@ def process_quick_reply(message, sender, event):
                         {'$set': {"operationStatus": 3}})
         return "OK", 200
 
+    if "SELECTED_" in message.quick_reply["payload"]:
+        action = message.quick_reply["payload"].split("_")
+        send_message(sender.id, get_speech("product_added").format(user["first_name"]), event)
+        return "OK", 200
+
+
 
 def process_postback(msg: Messaging, event):
     event.update("PRO", datetime.now(), "Processing postback")
