@@ -132,7 +132,7 @@ class Message(Object):
 
 
 class Messaging(Object):
-    def __init__(self, sender, recipient, timestamp, message: Message=None, read=None, postback=None, delivery=None):
+    def __init__(self, sender, recipient, timestamp, message: Message = None, read=None, postback=None, delivery=None):
         self.sender = sender
         self.recipient = recipient
         self.timestamp = timestamp
@@ -149,7 +149,7 @@ class Postback(Object):
 
 
 class Entry(Object):
-    def __init__(self, id, time, standby: list=None, messaging: list=None):
+    def __init__(self, id, time, standby: list=None, messaging: list = None):
         self.id = id
         self.time = time
         self.standby = standby
@@ -162,7 +162,7 @@ class Sender(Object):
 
 
 class Element(Object):
-    def __init__(self, _id=None, title=None, subtitle=None, buttons: list=None):
+    def __init__(self, _id=None, title=None, subtitle=None, buttons: list = None):
         self._id = _id
         self.title = title
         self.subtitle = subtitle

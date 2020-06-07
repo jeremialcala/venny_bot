@@ -629,6 +629,10 @@ def generate_response(user, text, event):
         response = {"attachment": attachment}
         send_attachment(recipient_id=user["id"], message=response, event=event)
 
+    if "buy" in concepts and user["registerStatus"] == 11:
+        send_stores(user, db, event)
+        return True
+
     if "balance" in concepts and user["registerStatus"] == 11:
         get_user_balance(user, db, event)
         return True
@@ -734,6 +738,18 @@ def send_tyc(sender, user, event):
                {"content_type": "text", "title": "No", "payload": "REJECT_PAYLOAD"}]
 
     send_options(sender.id, options, get_speech("tyc_request"), event)
+
+
+def send_stores(user, db, event):
+    elements = []
+    csr = db.stores.find()
+    for elem in csr:
+        elem = Element(**elem)
+        elements.append(elem.to_json_obj())
+    payload = {"template_type": "generic", "elements": elements}
+    attachment = {"type": "template", "payload": payload}
+    response = {"attachment": attachment}
+    send_attachment(recipient_id=user["id"], message=response, event=event)
 
 
 def send_operation(user, db, event):
