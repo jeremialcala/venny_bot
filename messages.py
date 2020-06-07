@@ -766,7 +766,7 @@ def add_prod_cart(sender: Sender, product_id, size):
     for elem in prds:
         prod = elem
     print(prod)
-    cart = db.shopping_cart.find({"": sender.id, "status": 0})
+    cart = db.shopping_cart.find({"user": sender.id, "status": 0})
     if cart.count() == 0:
         cart = {"user": sender.id, "products": [{"id":str(prod["_id"]), "size":size, "price": prod["price"]}],
                 "status": 0, "statusDate": datetime.now()}
