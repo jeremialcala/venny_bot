@@ -745,7 +745,8 @@ def send_stores(user, db, event):
     csr = db.stores.find()
     for elem in csr:
         elem = Store(**elem)
-        elements.append(elem.to_json_obj())
+        elements.append(elem.to_json_obj().pop("tags"))
+
     payload = {"template_type": "generic", "elements": elements}
     attachment = {"type": "template", "payload": payload}
     response = {"attachment": attachment}
