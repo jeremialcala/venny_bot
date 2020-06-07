@@ -181,4 +181,5 @@ class Store(Object):
     def get_store(self):
         obj = self.to_json_obj()
         obj = obj.pop("tags")
+        print(obj)
         return obj
