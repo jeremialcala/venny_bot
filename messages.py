@@ -955,7 +955,7 @@ def checkout(user, db, event):
             total += prod["price"]
             _prod = db.products.find_one({"_id": ObjectId(prod["id"])})
             if _prod["store"] not in stores:
-                stores.append(_prod["store"], prod["price"])
+                stores.append([_prod["store"], prod["price"]])
             else:
                 stores[_prod["store"]] += prod["price"]
             elements.append({"title":  _prod["title"], "subtitle": _prod["subtitle"], "price":  prod["price"],
