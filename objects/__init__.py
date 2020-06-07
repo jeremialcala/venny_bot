@@ -177,3 +177,8 @@ class Store(Object):
         self.image_url = image_url
         self.subtitle = subtitle
         self.buttons = buttons
+
+    def get_store(self):
+        obj = self.to_json_obj()
+        obj = obj.pop("tags")
+        return obj
