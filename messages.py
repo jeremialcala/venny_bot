@@ -757,14 +757,14 @@ def send_product_options(user, db, product_id, event):
     for elem in prds:
         prod = Product(**elem)
     print(prod.to_json())
-    send_message(user["id"], get_speech("product_price").format(str(prod.price)), event)
+    send_message(user["id"], get_speech("product_price").format(str(prod["price"])), event)
     options = []
     for ele in prod["options"]:
         if "sizes" in ele:
             for size in ele:
-                options.append({"content_type": "text", "title": size, "payload": "SELECTED_" + prod.price + "_" +
+                options.append({"content_type": "text", "title": str(size), "payload": "SELECTED_" + str(size) + "_" +
                                                                                   size})
-    send_options(user.id, options, get_speech("product_size").format(choice(prod.tags)), event)
+    send_options(user.id, options, get_speech("product_size").format(choice(prod["tags"])), event)
 
 
 def send_products(user, db, store_id, event):
