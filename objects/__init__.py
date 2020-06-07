@@ -162,9 +162,10 @@ class Sender(Object):
 
 
 class Element(Object):
-    def __init__(self, _id=None, title=None, tags=None, subtitle=None, buttons: list = None):
+    def __init__(self, _id=None, title=None, tags=None, image_url=None, subtitle=None, buttons: list = None):
         self._id = _id
         self.title = title
         self.tags = tags
+        self.image_url = image_url
         self.subtitle = subtitle
         self.buttons = buttons
