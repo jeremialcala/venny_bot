@@ -321,6 +321,7 @@ def process_quick_reply(message, sender, event):
         proceed_checkout(user, db, event)
         return "OK", 200
 
+
 def process_postback(msg: Messaging, event):
     event.update("PRO", datetime.now(), "Processing postback")
     sender = Sender(**msg.sender)
@@ -523,7 +524,7 @@ def is_registering(msg, event):
             location = {"desc": message.attachments[0]["title"], "url": message.attachments[0]["url"],
                         "coordinates": message.attachments[0]["payload"]["coordinates"],
                         "address": address}
-
+            update_shipping_address(user, location, event)
             db.users.update({"id": sender.id},
                             {"$set": {
                                 #  "registerStatus": 7,
