@@ -5,7 +5,7 @@ from datetime import datetime
 from urllib.request import urlretrieve
 from bson import ObjectId
 from twilio.rest import Client
-from objects import Messaging, Message, Attachments, Sender, Database, Event, ImgRequest, Element, Store
+from objects import Messaging, Message, Attachments, Sender, Database, Event, ImgRequest, Element, Store, Product
 from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance, \
     get_user_movements, get_user_by_name, execute_send_money, get_current_transaction
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
@@ -409,6 +409,11 @@ def process_postback(msg: Messaging, event):
         new_transaction["_id"] = _id
         send_payment_receipt(new_transaction, db, event)
 
+    if "SHOW_PROD_" in msg.postback["payload"]:
+        action = msg.postback["payload"].split("|")
+        send_products(user, db, action[2], event)
+        return True
+
 
 def is_registering(msg, event):
     event.update("PRO", datetime.now(), "Processing is_registered")
@@ -738,6 +743,20 @@ def send_tyc(sender, user, event):
                {"content_type": "text", "title": "No", "payload": "REJECT_PAYLOAD"}]
 
     send_options(sender.id, options, get_speech("tyc_request"), event)
+
+
+def send_products(user, db, store_id, event):
+    elements = []
+    prds = db.products.find({"store": store_id})
+    for elem in prds:
+        elem = Product(**elem)
+        elements.append(elem.get_element())
+
+    payload = {"template_type": "generic", "elements": elements}
+    attachment = {"type": "template", "payload": payload}
+    response = {"attachment": attachment}
+    send_message(user["id"], get_speech("store_list"), event)
+    send_attachment(recipient_id=user["id"], message=response, event=event)
 
 
 def send_stores(user, db, event):
