@@ -317,6 +317,9 @@ def process_quick_reply(message, sender, event):
         send_message(sender.id, get_speech("product_checkout").format(firstName=user["first_name"]), event)
         return "OK", 200
 
+    if "CHECKOUT_NOW" in message.quick_reply["payload"]:
+        proceed_checkout(user, db, event)
+        return "OK", 200
 
 def process_postback(msg: Messaging, event):
     event.update("PRO", datetime.now(), "Processing postback")
@@ -516,13 +519,11 @@ def is_registering(msg, event):
     # if user["registerStatus"] >= 6:
     if message.attachments is not None:
         if message.attachments[0]["type"] == "location":
-            location = {"desc": message.attachments[0]["title"], "url": message.attachments[0]["url"],
-                        "coordinates": message.attachments[0]["payload"]["coordinates"]}
             address = get_address(Coordinates(**message.attachments[0]["payload"]["coordinates"]), event)
-            if address.status_code == 200:
-                addr = json.loads(address.text)
-                for elem in addr["items"]:
-                    print(elem["address"])
+            location = {"desc": message.attachments[0]["title"], "url": message.attachments[0]["url"],
+                        "coordinates": message.attachments[0]["payload"]["coordinates"],
+                        "address": address}
+
             db.users.update({"id": sender.id},
                             {"$set": {
                                 #  "registerStatus": 7,
@@ -801,6 +802,20 @@ def add_prod_cart(sender: Sender, product_id, size):
                             {'$set': {"products": cart["products"]}})
 
 
+def update_shipping_address(user, location, event):
+    db = Database(os.environ["SCHEMA"]).get_schema()
+    carts = db.shopping_cart.find({"user": user["id"], "status": 0})
+    for cart in carts:
+        if "shipping" not in cart:
+            db.shopping_cart.update({"user": user["id"], "status": 0},
+                                    {'$set': {"shipping": location}})
+            options = [
+                {"content_type": "text", "title": "GO!", "payload": "CHECKOUT_NOW_PAYLOAD"},
+                {"content_type": "text", "title": "Maybe later", "payload": "CHECKOUT_LATER_PAYLOAD"}]
+            send_options(user["id"], options, get_speech("shipping_location_updated").format(first_name=user["first_name"]),
+                         event)
+
+
 def send_product_options(user, db, product_id, event):
     prds = db.products.find({"_id": ObjectId(product_id)})
     for elem in prds:
@@ -958,7 +973,6 @@ def checkout(user, db, event):
                "payment_method": "VISA " + account["cardNumber"][2:], "order_url": "",
                "timestamp": str(datetime.timestamp(datetime.now())).split(".")[0],
                "summary": {"quantity": elements.count(),"total_cost": total}, "elements": []}
-
 
     payload["elements"].append(elements)
     message = {"attachment": {"type": "template", "payload": payload}}

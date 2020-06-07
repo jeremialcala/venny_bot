@@ -321,7 +321,13 @@ def get_address(coordinates:Coordinates, event):
     payload = {}
     headers = {"Authorization": os.environ["AUTHORIZATION_HERE"]}
     url = os.environ["HERE_DISCOVER"] + os.environ["REVGEOCODE"].format(lat=coordinates.lat, lon=coordinates.long)
-    return requests.request("GET", url, headers=headers, data = payload)
+    response = requests.request("GET", url, headers=headers, data=payload)
+    address = ""
+    if response.status_code == 200:
+        addr = json.loads(response.text.encode('utf8'))
+        for elem in addr["items"]:
+            address = elem["address"]
+    return address
 
 
 def get_current_transaction(user):
