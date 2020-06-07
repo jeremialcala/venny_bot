@@ -410,7 +410,7 @@ def process_postback(msg: Messaging, event):
         send_payment_receipt(new_transaction, db, event)
 
     if "SHOW_PROD_" in msg.postback["payload"]:
-        action = msg.postback["payload"].split("|")
+        action = msg.postback["payload"].split("_")
         send_products(user, db, action[2], event)
         return True
 
