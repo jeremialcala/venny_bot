@@ -753,15 +753,13 @@ def send_tyc(sender, user, event):
 
 
 def send_product_options(user, db, product_id, event):
-    prds = db.products.find({"_id": ObjectId(product_id)})
-    for item in prds:
-        prod = Product(**item)
+    prod = Product(**db.products.find({"_id": ObjectId(product_id)}))
     send_message(user["id"], get_speech("product_price").format(str(prod.price)), event)
     options = []
     for ele in prod["options"]:
         if "sizes" in ele:
             for size in ele:
-                options.append({"content_type": "text", "title": size, "payload": "SELECTED_" + prod["price"] + "_" +
+                options.append({"content_type": "text", "title": size, "payload": "SELECTED_" + prod.price + "_" +
                                                                                   size})
     send_options(user.id, options, get_speech("product_size").format(choice(prod.tags)), event)
 
