@@ -958,8 +958,13 @@ def checkout(user, db, event):
                 stores.append([_prod["store"], prod["price"]])
             else:
                 stores[_prod["store"]] += prod["price"]
-            elements.append({"title":  _prod["title"], "subtitle": _prod["subtitle"], "price":  prod["price"],
-                             "currency": "USD", "image_url": _prod["image_url"]})
+            elements.append({
+                "title":  _prod["title"],
+                "subtitle": _prod["subtitle"],
+                "quantity": 1,
+                "price":  prod["price"],
+                "currency": "USD",
+                "image_url": _prod["image_url"]})
 
     # transaction = {"recipient": transaction["recipient"], "sender": user["id"], "type": 2, "status": 2,
     #                "amount": total, "status-date": datetime.now()}
@@ -973,12 +978,10 @@ def checkout(user, db, event):
         "template_type": "receipt",
         "recipient_name": "Merchants",
         "order_number": str(cart["_id"]),
-        "currency": "USD",
         "payment_method": "VISA " + account["cardNumber"][2:],
         "order_url": "",
         "timestamp": str(datetime.timestamp(datetime.now())).split(".")[0],
         "summary": {
-            "quantity": len(elements),
             "total_cost": total
         },
         "elements": []}
