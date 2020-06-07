@@ -975,11 +975,19 @@ def checkout(user, db, event):
     account = db.accountPool.find_one({"_id": ObjectId(user["accountId"])})
 
     payload = {"template_type": "receipt",
-               "recipient_name": "Merchants",
+               "recipient_name": user["first_name"],
                "order_number": str(cart["_id"]),
                "payment_method": "VISA " + account["cardNumber"][2:],
+               "currency": "USD",
                "order_url": "",
                "timestamp": str(datetime.timestamp(datetime.now())).split(".")[0],
+               "address": {
+                   "street_1": cart["shipping"]["address"]["label"],
+                   "street_2": "",
+                   "city": cart["shipping"]["address"]["city"],
+                   "state": cart["shipping"]["address"]["state"],
+                   "country": cart["shipping"]["address"]["countryCode"]
+               },
                "summary": {
                    "total_cost": total
                }, "elements": elements}
