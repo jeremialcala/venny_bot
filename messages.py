@@ -286,9 +286,10 @@ def process_quick_reply(message, sender, event):
             return "OK", 200
 
         if "SPLIT" in message.quick_reply["payload"]:
-            options = [{"content_type": "text", "title": "2", "payload": "DO_SPLIT_2_" + str(transaction["_id"])},
-                       {"content_type": "text", "title": "5", "payload": "DO_SPLIT_5_" + str(transaction["_id"])},
-                       {"content_type": "text", "title": "10", "payload": "DO_SPLIT_10_" + str(transaction["_id"])}]
+            options = [{"content_type": "text", "title": "2", "payload": "DO_SPLIT_2_" + str(transaction["_id"])}  # ,
+                       # {"content_type": "text", "title": "5", "payload": "DO_SPLIT_5_" + str(transaction["_id"])},
+                       # {"content_type": "text", "title": "10", "payload": "DO_SPLIT_10_" + str(transaction["_id"])}
+                       ]
             send_options(user["id"], options, "Ok! how many ways do you want to split this payment?", event)
 
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
@@ -354,6 +355,7 @@ def process_postback(msg: Messaging, event):
                         {'$set': {"operationStatus": 1}})
 
         return True
+
     if "MONEY_SEND" in msg.postback["payload"]:
         send_message(user["id"], get_speech("money_send_start").format(user["first_name"]), event)
         db.users.update({"id": user['id']},
@@ -394,10 +396,15 @@ def process_postback(msg: Messaging, event):
         transaction = db.transactions.find_one({"_id": ObjectId(action[2])})
         fraction = int(transaction["amount"]) / int(transaction["split"])
 
-        new_transaction = {"recipient": friend["id"], "sender": transaction["recipient"], "type": 2, "status": 2,
+        my_transaction = {"recipient": user["id"], "sender": transaction["recipient"], "type": 3, "status": 2,
                            "amount": fraction, "status-date": datetime.now()}
-        transaction_id = db.transactions.insert(new_transaction)
-        send_payment_receipt(new_transaction, db, event)
+
+        send_payment_receipt(db.transactions.insert(my_transaction), db, event)
+
+        new_transaction = {"recipient": friend["id"], "sender": transaction["recipient"], "type": 3, "status": 2,
+                           "amount": fraction, "status-date": datetime.now()}
+
+        send_payment_receipt(db.transactions.insert(new_transaction), db, event)
 
 
 def is_registering(msg, event):
