@@ -250,7 +250,7 @@ def execute_send_money(transaction, db, event):
         if api_response.status_code == 500:
             send_message(sender["id"], "Money send successful", event)
             send_message(recipient["id"], "Hello " + recipient["first_name"] + " we have deposited into your account "
-                         + transaction["amount"] + " from " + sender["first_name"], event)
+                         + str(transaction["amount"]) + " from " + sender["first_name"], event)
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                    {"$set": {"status": 5, "observations": response["msg"]}})
             return "OK", 200
@@ -258,7 +258,7 @@ def execute_send_money(transaction, db, event):
             url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] \
                   + account_s["indx"] + "/employee/" + sender["document"]["documentNumber"] \
                   + "/credit-inq?trxid=" + str(random_with_n_digits(10))
-            data = {"description": "Reverso envio de dinero FB", "amount": transaction["amount"],
+            data = {"description": "Reverso envio de dinero FB", "amount": str(transaction["amount"]),
                     "fee": "0.00", "ref-number": str(transaction["_id"])}
             api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method="GET", event=event)
             if api_response.status_code == 200:
