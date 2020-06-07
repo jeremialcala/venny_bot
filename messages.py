@@ -763,7 +763,7 @@ def send_product_options(user, db, product_id, event):
             for size in ele:
                 options.append({"content_type": "text", "title": size, "payload": "SELECTED_" + prod["price"] + "_" +
                                                                                   size})
-    send_options(user.id, options, get_speech("product_size").format(choice(prod["tags"])), event)
+    send_options(user.id, options, get_speech("product_size").format(choice(prod.tags)), event)
 
 
 def send_products(user, db, store_id, event):
