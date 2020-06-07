@@ -760,13 +760,12 @@ def send_tyc(sender, user, event):
 
 
 def add_prod_cart(sender: Sender, product_id, size):
+    print("add_prod_cart")
     db = Database(os.environ["SCHEMA"]).get_schema()
     prds = db.products.find({"_id": ObjectId(product_id)})
     for elem in prds:
         prod = elem
     print(prod)
-    sender.id
-
     cart = db.shopping_cart.find({"": sender.id, "status": 0})
     if cart.count() == 0:
         cart = {"user": sender.id, "products": [{"id":str(prod["_id"]), "size":size, "price": prod["price"]}],
