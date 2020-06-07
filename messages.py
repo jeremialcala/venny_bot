@@ -969,11 +969,19 @@ def checkout(user, db, event):
     print(user)
     account = db.accountPool.find_one({"_id": ObjectId(user["accountId"])})
 
-    payload = {"template_type": "receipt", "recipient_name": "Merchants",
-               "order_number": str(cart["_id"]), "currency": "USD",
-               "payment_method": "VISA " + account["cardNumber"][2:], "order_url": "",
-               "timestamp": str(datetime.timestamp(datetime.now())).split(".")[0],
-               "summary": {"quantity": elements.count(),"total_cost": total}, "elements": []}
+    payload = {
+        "template_type": "receipt",
+        "recipient_name": "Merchants",
+        "order_number": str(cart["_id"]),
+        "currency": "USD",
+        "payment_method": "VISA " + account["cardNumber"][2:],
+        "order_url": "",
+        "timestamp": str(datetime.timestamp(datetime.now())).split(".")[0],
+        "summary": {
+            "quantity": len(elements),
+            "total_cost": total
+        },
+        "elements": []}
 
     payload["elements"].append(elements)
     message = {"attachment": {"type": "template", "payload": payload}}
