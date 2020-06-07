@@ -398,13 +398,16 @@ def process_postback(msg: Messaging, event):
 
         my_transaction = {"recipient": user["id"], "sender": transaction["recipient"], "type": 3, "status": 2,
                            "amount": fraction, "status-date": datetime.now()}
-
-        send_payment_receipt(db.transactions.insert(my_transaction), db, event)
+        _id = db.transactions.insert(my_transaction)
+        my_transaction["_id"] = _id
+        send_payment_receipt(my_transaction, db, event)
 
         new_transaction = {"recipient": friend["id"], "sender": transaction["recipient"], "type": 3, "status": 2,
                            "amount": fraction, "status-date": datetime.now()}
 
-        send_payment_receipt(db.transactions.insert(new_transaction), db, event)
+        _id = db.transactions.insert(new_transaction)
+        new_transaction["_id"] = _id
+        send_payment_receipt(new_transaction, db, event)
 
 
 def is_registering(msg, event):
