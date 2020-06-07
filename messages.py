@@ -1,5 +1,7 @@
 import os
 import json
+from random import choice
+
 import requests
 from datetime import datetime
 from urllib.request import urlretrieve
@@ -414,6 +416,11 @@ def process_postback(msg: Messaging, event):
         send_products(user, db, action[2], event)
         return True
 
+    if "SHOW_OPTIONS_" in msg.postback["payload"]:
+        action = msg.postback["payload"].split("_")
+        send_product_options(user, db, action[2], event)
+        return True
+
 
 def is_registering(msg, event):
     event.update("PRO", datetime.now(), "Processing is_registered")
@@ -745,6 +752,20 @@ def send_tyc(sender, user, event):
     send_options(sender.id, options, get_speech("tyc_request"), event)
 
 
+def send_product_options(user, db, product_id, event):
+    prds = db.products.find({"_id": ObjectId(product_id)})
+    for item in prds:
+        prod = Product(**item)
+    send_message(user["id"], get_speech("product_price").format(choice(prod["price"]), event))
+    options = []
+    for ele in prod["options"]:
+        if "sizes" in ele:
+            for size in ele:
+                options.append({"content_type": "text", "title": size, "payload": "SELECTED_" + prod["price"] + "_" +
+                                                                                  size})
+    send_options(user.id, options, get_speech("product_size").format(choice(prod["tags"])), event)
+
+
 def send_products(user, db, store_id, event):
     elements = []
     prds = db.products.find({"store": store_id})
@@ -755,7 +776,7 @@ def send_products(user, db, store_id, event):
     payload = {"template_type": "generic", "elements": elements}
     attachment = {"type": "template", "payload": payload}
     response = {"attachment": attachment}
-    send_message(user["id"], get_speech("store_list"), event)
+    send_message(user["id"], get_speech("product_list"), event)
     send_attachment(recipient_id=user["id"], message=response, event=event)
 
 

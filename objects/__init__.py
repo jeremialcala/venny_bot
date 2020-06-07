@@ -193,6 +193,5 @@ class Product(Object):
         self.buttons = buttons
 
     def get_element(self):
-
         return json.dumps({"title": self.title, "image_url": self.image_url,
                            "subtitle": self.subtitle, "buttons": self.buttons})
