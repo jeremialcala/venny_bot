@@ -311,7 +311,7 @@ def process_quick_reply(message, sender, event):
 
     if "SELECTED_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
-        send_message(sender.id, get_speech("product_added").format(user["first_name"]), event)
+        send_message(sender.id, get_speech("product_added").format(firstName=user["first_name"]), event)
         return "OK", 200
 
 
