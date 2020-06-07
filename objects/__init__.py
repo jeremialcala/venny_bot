@@ -162,6 +162,14 @@ class Sender(Object):
 
 
 class Element(Object):
+    def __init__(self, _id=None, title=None, subtitle=None, buttons: list = None):
+        self._id = _id
+        self.title = title
+        self.subtitle = subtitle
+        self.buttons = buttons
+
+
+class Store(Object):
     def __init__(self, _id=None, title=None, tags=None, image_url=None, subtitle=None, buttons: list = None):
         self._id = _id
         self.title = title

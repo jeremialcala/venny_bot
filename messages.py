@@ -5,7 +5,7 @@ from datetime import datetime
 from urllib.request import urlretrieve
 from bson import ObjectId
 from twilio.rest import Client
-from objects import Messaging, Message, Attachments, Sender, Database, Event, ImgRequest, Element
+from objects import Messaging, Message, Attachments, Sender, Database, Event, ImgRequest, Element, Store
 from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance, \
     get_user_movements, get_user_by_name, execute_send_money, get_current_transaction
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
@@ -744,7 +744,7 @@ def send_stores(user, db, event):
     elements = []
     csr = db.stores.find()
     for elem in csr:
-        elem = Element(**elem)
+        elem = Store(**elem)
         elements.append(elem.to_json_obj())
     payload = {"template_type": "generic", "elements": elements}
     attachment = {"type": "template", "payload": payload}
