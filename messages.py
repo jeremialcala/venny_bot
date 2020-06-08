@@ -25,10 +25,6 @@ def process_message(msg: Messaging, event: Event):
     sender = Sender(**msg.sender)
     message = Message(**msg.message)
 
-    if msg.postback["payload"] is not None:
-        process_postback(msg, event)
-        return
-
     if message.is_echo is not None:
         return
 
@@ -36,7 +32,6 @@ def process_message(msg: Messaging, event: Event):
         event.update("PRO", datetime.now(), json.dumps(message.quick_reply))
         process_quick_reply(message, sender, event)
         return
-
 
     if is_registering(msg, event):
         return
@@ -340,7 +335,6 @@ def process_postback(msg: Messaging, event):
         if not user["tyc"]:
             send_tyc(sender, user, event)
         elif is_registering(msg, event):
-
             send_operation(user, db, event)
         return True
 
@@ -522,25 +516,25 @@ def is_registering(msg, event):
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
 
-    # if user["registerStatus"] >= 6:
-    if message.attachments is not None:
-        if message.attachments[0]["type"] == "location":
-            address = get_address(Coordinates(**message.attachments[0]["payload"]["coordinates"]), event)
-            location = {"desc": message.attachments[0]["title"], "url": message.attachments[0]["url"],
-                        "coordinates": message.attachments[0]["payload"]["coordinates"],
-                        "address": address}
-            update_shipping_address(user, location, event)
-            db.users.update({"id": sender.id},
-                            {"$set": {
-                                #  "registerStatus": 7,
-                                "statusDate": datetime.now(),
-                                "location": location,
-                                "locationDate": datetime.now()}})
-            # options = [{"content_type": "user_phone_number"}]
-            # send_options(sender.id, options, get_speech("confirm_phone_number"), event)
-            return True
-        # options = [{"content_type": "location"}]
-        # send_options(sender.id, options, get_speech("gimme_location"), event)
+    if user["registerStatus"] >= 6:
+        if message.attachments is not None:
+            if message.attachments[0]["type"] == "location":
+                address = get_address(Coordinates(**message.attachments[0]["payload"]["coordinates"]), event)
+                location = {"desc": message.attachments[0]["title"], "url": message.attachments[0]["url"],
+                            "coordinates": message.attachments[0]["payload"]["coordinates"],
+                            "address": address}
+                update_shipping_address(user, location, event)
+                db.users.update({"id": sender.id},
+                                {"$set": {
+                                    #  "registerStatus": 7,
+                                    "statusDate": datetime.now(),
+                                    "location": location,
+                                    "locationDate": datetime.now()}})
+                # options = [{"content_type": "user_phone_number"}]
+                # send_options(sender.id, options, get_speech("confirm_phone_number"), event)
+                return True
+            # options = [{"content_type": "location"}]
+            # send_options(sender.id, options, get_speech("gimme_location"), event)
 
     if user["registerStatus"] == 9:
         if message.text is not None:
