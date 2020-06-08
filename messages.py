@@ -996,8 +996,8 @@ def checkout(user, db, event):
                "summary": {
                    "subtotal": total,
                    "shipping_cost": 0.00,
-                   "total_tax": locale.currency(total * 0.12),
-                   "total_cost": locale.currency(total * 1.12)
+                   "total_tax": "{:.2f}".format(total * 0.12),
+                   "total_cost": "{:.2f}".format(total * 1.12)
                }, "elements": elements}
 
     message = {"attachment": {"type": "template", "payload": payload}}
