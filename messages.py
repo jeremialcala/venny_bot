@@ -985,6 +985,7 @@ def checkout(user, db, event):
                    "street_1": cart["shipping"]["address"]["label"],
                    "street_2": "",
                    "city": cart["shipping"]["address"]["city"],
+                   "postal_code": "94025",
                    "state": cart["shipping"]["address"]["state"],
                    "country": cart["shipping"]["address"]["countryCode"]
                },
