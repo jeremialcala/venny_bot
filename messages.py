@@ -572,9 +572,9 @@ def is_registering(msg, event):
 
     if user["registerStatus"] == 10:
         options = [
-            {"content_type": "text", "title": "Autorizar", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
-            {"content_type": "text", "title": "Cancelar", "payload": "CANCEL_PAYLOAD"}]
-        send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
+            {"content_type": "text", "title": "Go Ahead!", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
+            {"content_type": "text", "title": "Cancel", "payload": "CANCEL_PAYLOAD"}]
+        send_options(sender.id, options, get_speech("account_creation_start").format(first_name=user["first_name"]),
                      event)
         return True
 
