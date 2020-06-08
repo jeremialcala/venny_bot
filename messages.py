@@ -1,3 +1,4 @@
+import locale
 import os
 import json
 from random import choice
@@ -946,6 +947,7 @@ def send_payment_receipt(transaction, db, event):
 
 
 def checkout(user, db, event):
+    locale.setlocale(locale.LC_ALL, '')
     carts = db.shopping_cart.find({"user": user["id"], "status": 0})
     total = 0
 
@@ -994,8 +996,8 @@ def checkout(user, db, event):
                "summary": {
                    "subtotal": total,
                    "shipping_cost": 0.00,
-                   "total_tax": total * 0.12,
-                   "total_cost": total * 1.12
+                   "total_tax": locale.currency(total * 0.12),
+                   "total_cost": locale.currency(total * 1.12)
                }, "elements": elements}
 
     message = {"attachment": {"type": "template", "payload": payload}}
