@@ -418,7 +418,7 @@ def execute_payment(transaction, db, event):
 
     data = {
         "description": "Payment FB",
-        "amount": str(transaction["amount"]) + "000.00",
+        "amount": str(transaction["amount"]).replace(".") + "000.00",
         "fee": "0.00",
         "ref-number": str(transaction["_id"])}
 
