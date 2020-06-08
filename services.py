@@ -394,3 +394,39 @@ def get_user_by_name(name, operation, db, transaction=None):
             pass
         print(attachment)
         return "OK", 200, attachment
+
+
+def execute_payment(transaction, db, event):
+    print(transaction)
+    api_headers = {"x-country": "Ec-bp",
+                   "language": "es",
+                   "channel": "API",
+                   "accept": "application/json",
+                   "Content-Type": "application/json",
+                   "Authorization": "Bearer $OAUTH2TOKEN$"}
+
+    api_headers["Authorization"] = api_headers["Authorization"] \
+        .replace("$OAUTH2TOKEN$", os.environ["NP_OAUTH2_TOKEN"])
+
+    sender = db.users.find_one({"id": transaction["sender"]})
+    print(sender)
+    account_s = db.accountPool.find_one({"_id": ObjectId(sender["accountId"])})
+
+    url = os.environ["NP_URL"] + os.environ["CEOAPI"] + os.environ["CEOAPI_VER"] + \
+          account_s["indx"] + "/employee/" + sender["document"]["documentNumber"] + \
+          "/debit-inq?trxid=" + str(random_with_n_digits(10))
+
+    data = {
+        "description": "Payment FB",
+        "amount": str(transaction["amount"]) + "000.00",
+        "fee": "0.00",
+        "ref-number": str(transaction["_id"])}
+
+    api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method=None, event=event)
+    response = json.loads(api_response.text)
+    print(response)
+    print(api_response.status_code)
+    db.transactions.update({"_id": ObjectId(transaction["_id"])}, {"$set": {"status": 4}})
+    send_message(sender["id"], "Your payment was send successfully, thank's", event)
+
+    return "OK", 200

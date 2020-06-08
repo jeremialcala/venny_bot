@@ -11,7 +11,7 @@ from twilio.rest import Client
 from objects import Messaging, Message, Attachments, Sender, Database, Event, ImgRequest, Element, Store, Product, \
     Coordinates
 from services import user_origination, get_user_face, validate_user_document, create_user_card, get_user_balance, \
-    get_user_movements, get_user_by_name, execute_send_money, get_current_transaction, get_address
+    get_user_movements, get_user_by_name, execute_send_money, get_current_transaction, get_address, execute_payment
 from tools import get_user_by_id, send_message, send_attachment, send_options, only_numeric, random_with_n_digits
 
 params = {"access_token": os.environ["PAGE_ACCESS_TOKEN"]}
@@ -299,6 +299,11 @@ def process_quick_reply(message, sender, event):
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
                                    {"$set": {"status": 7}})
             return "OK", 200
+
+    if "PAY_DO_" in message.quick_reply["payload"]:
+        action = message.quick_reply["payload"].split("_")
+        transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
+        execute_payment(transaction, db, event)
 
     if "SPLIT_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
@@ -970,8 +975,11 @@ def checkout(user, db, event):
                 "currency": "USD",
                 "image_url": _prod["image_url"]})
 
-    # transaction = {"recipient": transaction["recipient"], "sender": user["id"], "type": 2, "status": 2,
-    #                "amount": total, "status-date": datetime.now()}
+    transaction = {"sender": user["id"], "type": 4, "status": 2,
+                   "amount": "{:.2f}".format(total * 1.12), "status-date": datetime.now()}
+
+    _id = db.transactions.insert(transaction)
+    transaction["_id"] = _id
 
     user = db.users.find_one({"id": user["id"]})
     # friend = db.users.find_one({"id": transaction["recipient"]})
@@ -1009,8 +1017,8 @@ def checkout(user, db, event):
                         headers=headers,
                         data=json.dumps(data))
     print(rsp.text)
-    # options = [
-    #     {"content_type": "text", "title": "Confirm", "payload": "TRX_DO_CONFIRM_" + str(transaction["_id"])},
-    #     {"content_type": "text", "title": "Cancel", "payload": "TRX_DO_CANCEL_" + str(transaction["_id"])}]
-    #
-    # send_options(user["id"], options, get_speech("money_send_confirm"), event)
+    options = [
+        {"content_type": "text", "title": "Confirm", "payload": "PAY_DO_CONFIRM_" + str(transaction["_id"])},
+        {"content_type": "text", "title": "Cancel", "payload": "PAY_DO_CANCEL_" + str(transaction["_id"])}]
+
+    send_options(user["id"], options, "Do you want to pay right now?", event)
