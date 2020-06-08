@@ -334,8 +334,6 @@ def process_postback(msg: Messaging, event):
         if not user["tyc"]:
             send_tyc(sender, user, event)
         elif is_registering(msg, event):
-            return True
-        else:
             send_operation(user, db, event)
         return True
 
