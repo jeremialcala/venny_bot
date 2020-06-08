@@ -990,7 +990,10 @@ def checkout(user, db, event):
                    "country": cart["shipping"]["address"]["countryCode"]
                },
                "summary": {
-                   "total_cost": total
+                   "subtotal": total,
+                   "shipping_cost": 0.00,
+                   "total_tax": total * 0.12,
+                   "total_cost": total * 1.12
                }, "elements": elements}
 
     message = {"attachment": {"type": "template", "payload": payload}}
