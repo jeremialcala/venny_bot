@@ -198,7 +198,6 @@ def process_quick_reply(message, sender, event):
         return True
 
     if "ACCOUNT_CONFIRM_PAYLOAD" in message.quick_reply["payload"]:
-        send_message(sender.id, get_speech("account_creation_start"), event)
         origination = user_origination(user, db, event)
         if origination[1] == 200:
             card = create_user_card(user, event)
@@ -555,10 +554,11 @@ def is_registering(msg, event):
                                    ]
                         send_options(sender.id, options, get_speech("confirmation_code_send_location"), event)
                         return True
+                    send_message(sender.id, get_speech("code_confirm"), event)
                     options = [
                         {"content_type": "text", "title": "Go Ahead!", "payload": "ACCOUNT_CONFIRM_PAYLOAD"},
                         {"content_type": "text", "title": "Cancel", "payload": "CANCEL_PAYLOAD"}]
-                    send_options(sender.id, options, get_speech("code_confirm").format(first_name=user["first_name"]),
+                    send_options(sender.id, options, get_speech("account_creation_start").format(first_name=user["first_name"]),
                                  event)
                     db.users.update({"id": sender.id},
                                     {"$set": {"registerStatus": 10,
