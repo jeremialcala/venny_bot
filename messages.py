@@ -440,7 +440,7 @@ def is_registering(msg, event):
     user = who_send(sender)
     event.update("PRO", datetime.now(), "user found {first_name} status TyC {tyc}".format(first_name=user["first_name"]
                                                                                           , tyc=str(user["tyc"])))
-    message = ""
+    message = Message()
     if msg.message is not None:
         message = Message(**msg.message)
     db = Database(os.environ["SCHEMA"]).get_schema()
