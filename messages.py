@@ -303,6 +303,8 @@ def process_quick_reply(message, sender, event):
     if "PAY_DO_" in message.quick_reply["payload"]:
         action = message.quick_reply["payload"].split("_")
         transaction = db.transactions.find_one({"_id": ObjectId(action[3])})
+        db.shopping_cart.update({"_id": ObjectId(action[4])},
+                                {"$set": {"status": 1}})
         execute_payment(transaction, db, event)
 
     if "SPLIT_" in message.quick_reply["payload"]:
@@ -1018,7 +1020,9 @@ def checkout(user, db, event):
                         data=json.dumps(data))
     print(rsp.text)
     options = [
-        {"content_type": "text", "title": "Confirm", "payload": "PAY_DO_CONFIRM_" + str(transaction["_id"])},
-        {"content_type": "text", "title": "Cancel", "payload": "PAY_DO_CANCEL_" + str(transaction["_id"])}]
+        {"content_type": "text", "title": "Confirm", "payload": "PAY_DO_CONFIRM_" + str(transaction["_id"])
+                                                                + "_" + cart["_id"]},
+        {"content_type": "text", "title": "Cancel", "payload": "PAY_DO_CANCEL_" + str(transaction["_id"])
+                                                               + "_" + cart["_id"]}]
 
     send_options(user["id"], options, "Do you want to pay right now?", event)
