@@ -24,6 +24,11 @@ def process_message(msg: Messaging, event: Event):
     # Find this user
     sender = Sender(**msg.sender)
     message = Message(**msg.message)
+
+    if msg.postback["payload"] is not None:
+        process_postback(msg, event)
+        return
+
     if message.is_echo is not None:
         return
 
@@ -31,6 +36,7 @@ def process_message(msg: Messaging, event: Event):
         event.update("PRO", datetime.now(), json.dumps(message.quick_reply))
         process_quick_reply(message, sender, event)
         return
+
 
     if is_registering(msg, event):
         return
@@ -334,6 +340,7 @@ def process_postback(msg: Messaging, event):
         if not user["tyc"]:
             send_tyc(sender, user, event)
         elif is_registering(msg, event):
+
             send_operation(user, db, event)
         return True
 
