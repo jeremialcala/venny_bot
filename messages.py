@@ -1021,8 +1021,8 @@ def checkout(user, db, event):
     print(rsp.text)
     options = [
         {"content_type": "text", "title": "Confirm", "payload": "PAY_DO_CONFIRM_" + str(transaction["_id"])
-                                                                + "_" + cart["_id"]},
+                                                                + "_" + str(cart["_id"])},
         {"content_type": "text", "title": "Cancel", "payload": "PAY_DO_CANCEL_" + str(transaction["_id"])
-                                                               + "_" + cart["_id"]}]
+                                                               + "_" + str(cart["_id"])}]
 
     send_options(user["id"], options, "Do you want to pay right now?", event)
