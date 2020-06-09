@@ -141,7 +141,7 @@ def process_quick_reply(message, sender, event):
         options = [{"content_type": "text", "title": "Passport", "payload": "PASSPORT_PAYLOAD"}  # ,
                    # {"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"}
                    ]
-        sAC5818d29a7678b860e93901d4bb32d5d9end_options(sender.id, options, get_speech("origination"), event)
+        send_options(sender.id, options, get_speech("origination"), event)
         return True
 
     if "CRELEC_PAYLOAD" in message.quick_reply["payload"]:
