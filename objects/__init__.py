@@ -119,7 +119,7 @@ class Attachments(Object):
 
 
 class Message(Object):
-    def __init__(self, mid=None, seq=None, attachments: list=None, text=None, is_echo=None, app_id=None,
+    def __init__(self, mid=None, seq=None, attachments: list=None, reply_to=None, text=None, is_echo=None, app_id=None,
                  quick_reply=None, sticker_id=None):
         self.mid = mid
         self.seq = seq
