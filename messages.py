@@ -141,7 +141,7 @@ def process_quick_reply(message, sender, event):
         options = [{"content_type": "text", "title": "Passport", "payload": "PASSPORT_PAYLOAD"}  # ,
                    # {"content_type": "text", "title": "C. Elector", "payload": "CRELEC_PAYLOAD"}
                    ]
-        send_options(sender.id, options, get_speech("origination"), event)
+        sAC5818d29a7678b860e93901d4bb32d5d9end_options(sender.id, options, get_speech("origination"), event)
         return True
 
     if "CRELEC_PAYLOAD" in message.quick_reply["payload"]:
@@ -155,7 +155,7 @@ def process_quick_reply(message, sender, event):
         db.users.update({"id": sender.id},
                         {"$set": {"registerStatus": 5,
                                   "statusDate": datetime.now(),
-                                  "document": {"documentType": "passporte"}}})
+                                  "document": {"documentType": "passport"}}})
 
         send_message(sender.id, get_speech("gimme_picture_passport"), event)
         return True
