@@ -248,7 +248,7 @@ def execute_send_money(transaction, db, event):
         api_response = np_api_request(url=url, data=data, api_headers=api_headers, http_method=None, event=event)
         print(response)
         if api_response.status_code == 500:
-            send_message(sender["id"], "Money send successful", event)
+            send_message(sender["id"], "Money sent successfully", event)
             send_message(recipient["id"], "Hello " + recipient["first_name"] + " we have deposited into your account "
                          + str(transaction["amount"]) + " from " + sender["first_name"], event)
             db.transactions.update({"_id": ObjectId(transaction["_id"])},
@@ -427,6 +427,6 @@ def execute_payment(transaction, db, event):
     print(response)
     print(api_response.status_code)
     db.transactions.update({"_id": ObjectId(transaction["_id"])}, {"$set": {"status": 4}})
-    send_message(sender["id"], "Your payment was send successfully, thank's", event)
+    send_message(sender["id"], "Your payment was sent successfully, thank's", event)
 
     return "OK", 200
