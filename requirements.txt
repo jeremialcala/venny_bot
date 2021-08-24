@@ -8,7 +8,7 @@ itsdangerous==0.24
 requests==2.20.0
 future>=0.16.0
 certifi
-urllib3==1.21.1
+urllib3==1.26.5
 jsonSchema
 twilio
 dnspython
