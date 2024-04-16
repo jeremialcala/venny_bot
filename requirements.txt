@@ -3,7 +3,7 @@ pymongo
 Flask<=1.0.0
 MarkupSafe==0.23
 Werkzeug<=0.15.5
-gunicorn==19.6.0
+gunicorn==22.0.0
 itsdangerous==0.24
 requests==2.31.0
 future>=0.16.0
